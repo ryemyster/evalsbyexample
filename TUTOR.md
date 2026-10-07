@@ -106,6 +106,8 @@ Each lesson lists what to run, what to point out, what to ask, and the exercise 
 - **Human review:** the sample scorecards rate candidate-v2, the improved version they'll meet in Lesson 5. Run `PY -m returns_eval run --candidate candidate-v2`, then `PY -m returns_eval review-summary latest:candidate-v2 data/human_review/*.csv`. The ratings are ILLUSTRATIVE (two made-up reviewers). Point out that they agreed on usability for 23 of 26 drafts. Then show the RC-017 disagreement (an opened serum after a skin reaction: decline, or escalate?) and **ask** which they'd choose and why.
 - **Exercise 4** (`exercises/ex04_reviewer_agreement.py`): ask how they'd measure whether two reviewers agree. Implement their answer and run `PY -m exercises 4`.
 
+**Good place to stop.** After Lesson 3 the learner has the core idea: an eval is a set of test situations, checks that grade each answer, and a rule that one serious mistake outweighs a good average. Say so in one sentence and ask: "That's the main idea. Want to stop here, or keep going? The next lessons are more like detective work: comparing tables to find what the average hides." If they stop, do the **Wrap-up** in its short form: three sentences summarizing what they learned, no decision brief.
+
 ### Lesson 4: Compare by failure type, not just the average (step 6)
 
 - Run `PY -m returns_eval compare baseline candidate-v1`.

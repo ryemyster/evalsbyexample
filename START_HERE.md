@@ -67,7 +67,7 @@ Explain what happened, then wait for me before moving on.
 - **You may be asked to approve commands or file edits.** That's normal. The course commands start with `python3 -m returns_eval` or `python3 -m exercises` (on Windows, `py` instead of `python3`), and they only read and write files inside this folder. Most agents offer an "allow for this session" option, so you only approve each kind of command once. If you're unsure about something, ask the agent what it does before you approve it.
 - **You don't need to set anything up.** The course needs Python 3.9 or newer, which most Macs already have. If your computer needs it (common on Windows), your agent asks first: it can install it for you, show you how to do it yourself, or skip ahead if you've got it handled. On a Mac, a window may ask to install "command line developer tools": click Install. Nothing else gets installed.
 - **You'll be asked questions.** "Would you approve this draft?" "What should block a launch?" There's often no single right answer. The point is to practice the judgment.
-- **It's split into lessons.** You can do a quick tour in one sitting, or the full course over a few sessions.
+- **It's split into lessons.** The first three give you the main idea in about 15 minutes, and that's a fine place to stop. The later lessons are more like detective work, comparing results to find what an average hides. Do them in one sitting or over a few.
 - **You can't break anything permanently.** The agent can put any file back the way it started, and it saves a copy of your version first.
 
 ## If you'd rather do it yourself
