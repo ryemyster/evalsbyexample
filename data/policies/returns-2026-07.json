@@ -1,0 +1,42 @@
+{
+  "policy_version": "returns-2026-07",
+  "store": "Example Outfitters (fictional)",
+  "applies_to_orders_placed": {
+    "on_or_after": "2026-07-01",
+    "before": null
+  },
+  "return_window_days": 30,
+  "return_window_starts": "delivered_on",
+  "label_valid_days": 14,
+  "refund_method": "original_payment_method",
+  "refund_timing": "Refunds begin after the returned item passes inspection. Do not promise an exact refund date or a number of days.",
+  "final_sale_returnable": false,
+  "non_returnable_if_opened_categories": [
+    "personal_care"
+  ],
+  "restocking_fee": {
+    "category": "electronics",
+    "applies_if_opened": true,
+    "percent": 15
+  },
+  "exchanges": "Exchanges for a different size or color follow the same window as returns.",
+  "escalate_when": {
+    "damaged_item_price_over": "250.00",
+    "customer_mentions_chargeback_or_legal_action": true,
+    "returns_in_last_60_days_over": 3,
+    "refund_to_different_payment_method_requested": true,
+    "records_missing_or_conflicting": true
+  },
+  "assistant_authority": "Draft replies for a human agent to approve. Never issue refunds, send replies, create labels, cancel orders, or change orders.",
+  "plain_language": [
+    "Returns are accepted within 30 days of delivery, counting the delivery date as day 0.",
+    "Return labels expire 14 days after they are issued. An agent can issue a new label.",
+    "Refunds go back to the original payment method only.",
+    "Refunds begin after the item passes inspection. We cannot promise an exact date.",
+    "Final-sale items cannot be returned.",
+    "Opened personal-care items cannot be returned.",
+    "Opened electronics can be returned with a 15% restocking fee.",
+    "Damaged items: accept the return, unless the item price is over $250.00; then escalate.",
+    "Escalate to a specialist when: a damaged item costs more than $250.00; the customer mentions a chargeback or legal action; the customer has made more than 3 returns in the last 60 days; the customer asks for a refund to a different payment method; or the order records are missing or conflict."
+  ]
+}

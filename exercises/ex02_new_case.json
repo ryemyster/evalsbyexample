@@ -1,0 +1,68 @@
+{
+  "id": "RC-101",
+  "title": "TODO: short title",
+  "category": "TODO",
+  "source": "exercise 2: policy rule with no case yet",
+  "added_in": "1.1",
+  "must_pass": false,
+  "as_of": "2026-08-14",
+  "policy_version": "returns-2026-07",
+  "customer": {
+    "customer_id": "C-3001",
+    "name": "Ivan Petrov",
+    "email": "ivan.petrov@example.com",
+    "returns_last_60_days": 0
+  },
+  "message": "I returned the boots last week. My old card was cancelled, so can you send the refund to my new card instead?",
+  "orders": [
+    {
+      "order_id": "EO-11001",
+      "customer_id": "C-3001",
+      "customer_name": "Ivan Petrov",
+      "customer_email": "ivan.petrov@example.com",
+      "placed_on": "2026-07-21",
+      "delivered_on": "2026-07-24",
+      "shipping_status": "delivered",
+      "items": [
+        {
+          "sku": "SKU-FT-901",
+          "name": "Leather boots",
+          "category": "footwear",
+          "price": "140.00",
+          "final_sale": false,
+          "opened": false
+        }
+      ],
+      "order_total": "140.00",
+      "return": {
+        "status": "received",
+        "label_issued_on": "2026-08-03",
+        "shipped_on": "2026-08-04",
+        "received_on": "2026-08-10",
+        "inspection": {
+          "status": "pending",
+          "completed_on": null
+        }
+      },
+      "refund": {
+        "status": "not_issued",
+        "amount": null,
+        "issued_on": null
+      },
+      "notes": ""
+    }
+  ],
+  "expected": {
+    "acceptable_resolutions": [
+      "TODO"
+    ],
+    "target_order_id": "TODO",
+    "other_allowed_order_ids": [],
+    "behavior": "TODO: describe the right outcome in plain words",
+    "must_mention": [],
+    "must_not_mention": []
+  },
+  "unacceptable_outcomes": [
+    "TODO"
+  ]
+}

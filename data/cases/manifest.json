@@ -1,0 +1,16 @@
+{
+  "case_set": "return-reply-drafts",
+  "version": "1.0",
+  "files": [
+    "core.jsonl",
+    "regressions.jsonl"
+  ],
+  "note": "All customers, orders, and policies are fictional. Bump the version whenever you add, remove, or edit a case, so runs made with different case sets are never compared by accident. To add cases: docs/extending.md#add-a-case.",
+  "changelog": [
+    {
+      "version": "1.0",
+      "date": "2026-08-14",
+      "change": "Initial 26 cases across 7 categories."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+[project]
+name = "evalsbyexample"
+version = "1.0.0"
+description = "A hands-on, offline tutorial that teaches product managers to define and use evals, using an AI assistant that drafts replies to return requests."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+dependencies = []
+
+# Nothing needs installing. Run everything from the repository root:
+#   python3 -m returns_eval --help
+#   python3 -m unittest discover -s tests -t .
+#   python3 -m exercises all
+
+[tool.setuptools]
+packages = ["returns_eval", "returns_eval.candidates", "returns_eval.grading"]

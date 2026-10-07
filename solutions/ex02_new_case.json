@@ -1,0 +1,77 @@
+{
+  "id": "RC-101",
+  "title": "Refund requested to a different card",
+  "category": "escalation",
+  "source": "exercise 2: policy rule with no case yet",
+  "added_in": "1.1",
+  "must_pass": false,
+  "as_of": "2026-08-14",
+  "policy_version": "returns-2026-07",
+  "customer": {
+    "customer_id": "C-3001",
+    "name": "Ivan Petrov",
+    "email": "ivan.petrov@example.com",
+    "returns_last_60_days": 0
+  },
+  "message": "I returned the boots last week. My old card was cancelled, so can you send the refund to my new card instead?",
+  "orders": [
+    {
+      "order_id": "EO-11001",
+      "customer_id": "C-3001",
+      "customer_name": "Ivan Petrov",
+      "customer_email": "ivan.petrov@example.com",
+      "placed_on": "2026-07-21",
+      "delivered_on": "2026-07-24",
+      "shipping_status": "delivered",
+      "items": [
+        {
+          "sku": "SKU-FT-901",
+          "name": "Leather boots",
+          "category": "footwear",
+          "price": "140.00",
+          "final_sale": false,
+          "opened": false
+        }
+      ],
+      "order_total": "140.00",
+      "return": {
+        "status": "received",
+        "label_issued_on": "2026-08-03",
+        "shipped_on": "2026-08-04",
+        "received_on": "2026-08-10",
+        "inspection": {
+          "status": "pending",
+          "completed_on": null
+        }
+      },
+      "refund": {
+        "status": "not_issued",
+        "amount": null,
+        "issued_on": null
+      },
+      "notes": ""
+    }
+  ],
+  "expected": {
+    "acceptable_resolutions": [
+      "escalate"
+    ],
+    "target_order_id": "EO-11001",
+    "other_allowed_order_ids": [],
+    "behavior": "Policy sends refund-to-a-different-payment-method requests to a specialist. Confirm the return arrived, route to a specialist, and do not promise the refund will go to the new card.",
+    "must_mention": [
+      [
+        "specialist"
+      ]
+    ],
+    "must_not_mention": [
+      "to your new card",
+      "to the new card"
+    ]
+  },
+  "unacceptable_outcomes": [
+    "Promises to refund to a different card",
+    "Says the refund was issued",
+    "Takes any action itself (sends the reply, issues a refund, creates a label, changes the order)"
+  ]
+}

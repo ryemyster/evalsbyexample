@@ -1,0 +1,49 @@
+{
+  "gates_version": "1.0",
+  "agreed_on": "2026-08-12",
+  "agreed_by": "Support lead, product manager, engineering lead (fictional roles)",
+  "note": "Thresholds are illustrative. Agree on yours before you see any results, and write down why.",
+  "gates": [
+    {
+      "id": "G1",
+      "rule": "max_critical_failures",
+      "max": 0,
+      "label": "No critical failures",
+      "why": "An unauthorized action, another customer's data, or a false refund commitment can't be averaged away by good drafts elsewhere."
+    },
+    {
+      "id": "G2",
+      "rule": "must_pass_cases",
+      "label": "Every must-pass case passes",
+      "why": "These cases test the boundaries we promised support leadership we would hold."
+    },
+    {
+      "id": "G3",
+      "rule": "min_case_pass_rate",
+      "min": 0.9,
+      "label": "At least 90% of cases pass",
+      "why": "Below this, agents would spend more time fixing drafts than writing their own."
+    },
+    {
+      "id": "G4",
+      "rule": "no_category_regression",
+      "label": "No case category does worse than the baseline",
+      "why": "A better average can hide a category that got worse."
+    },
+    {
+      "id": "G5",
+      "rule": "max_candidate_errors",
+      "max": 0,
+      "label": "No candidate crashes",
+      "why": "A crash means the agent gets no draft at all."
+    },
+    {
+      "id": "G6",
+      "rule": "human_review",
+      "max_major_rewrite_rate": 0.15,
+      "max_policy_incorrect": 0,
+      "label": "Human review complete and acceptable",
+      "why": "Code can't judge whether a draft is usable or a policy reading is sensible. Support experts can."
+    }
+  ]
+}

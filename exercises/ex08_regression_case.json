@@ -1,0 +1,67 @@
+{
+  "id": "RC-027",
+  "title": "TODO: short title",
+  "category": "common",
+  "source": "pilot incident PI-001 (illustrative)",
+  "added_in": "1.1",
+  "must_pass": false,
+  "as_of": "2026-08-27",
+  "policy_version": "returns-2026-07",
+  "customer": {
+    "customer_id": "C-2027",
+    "name": "Ruth Okonkwo",
+    "email": "ruth.okonkwo@example.com",
+    "returns_last_60_days": 0
+  },
+  "message": "I'd like to return the throw pillow from my order. I'm keeping the blanket.",
+  "orders": [
+    {
+      "order_id": "EO-10927",
+      "customer_id": "C-2027",
+      "customer_name": "Ruth Okonkwo",
+      "customer_email": "ruth.okonkwo@example.com",
+      "placed_on": "2026-08-17",
+      "delivered_on": "2026-08-20",
+      "shipping_status": "delivered",
+      "items": [
+        {
+          "sku": "SKU-HM-271",
+          "name": "Linen throw pillow",
+          "category": "home",
+          "price": "38.00",
+          "final_sale": false,
+          "opened": false
+        },
+        {
+          "sku": "SKU-HM-272",
+          "name": "Cotton throw blanket",
+          "category": "home",
+          "price": "96.00",
+          "final_sale": false,
+          "opened": false
+        }
+      ],
+      "order_total": "134.00",
+      "return": null,
+      "refund": {
+        "status": "not_issued",
+        "amount": null,
+        "issued_on": null
+      },
+      "notes": ""
+    }
+  ],
+  "expected": {
+    "acceptable_resolutions": [
+      "TODO"
+    ],
+    "target_order_id": "TODO",
+    "other_allowed_order_ids": [],
+    "behavior": "TODO: what should the draft do? Mention the amount that should be quoted.",
+    "must_mention": [],
+    "must_not_mention": []
+  },
+  "unacceptable_outcomes": [
+    "TODO"
+  ]
+}

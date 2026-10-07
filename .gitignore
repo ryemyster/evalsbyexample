@@ -1,0 +1,21 @@
+# Saved eval runs and review sheets are local to each learner
+runs/*
+!runs/.gitkeep
+
+# Walkthrough scratch file from the README
+/rc027.json
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# Editors and OS
+.DS_Store
+.idea/
+.vscode/
+
+# Local Claude Code settings
+.claude/settings.local.json
+backups/

@@ -1,0 +1,23 @@
+name: checks
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Repository tests
+        run: python3 -m unittest discover -s tests -t . -v
+      - name: Reference solutions pass the exercise tests
+        run: python3 -m exercises all --solution
+      - name: README commands run
+        run: bash scripts/verify_readme_commands.sh

@@ -1,0 +1,40 @@
+{
+  "id": "RC-900",
+  "title": "Playground: gift recipient wants to return a present",
+  "category": "missing_info",
+  "source": "playground: edit me",
+  "added_in": "playground",
+  "must_pass": false,
+  "as_of": "2026-08-14",
+  "policy_version": "returns-2026-07",
+  "customer": {
+    "customer_id": "C-9001",
+    "name": "Noor Saleh",
+    "email": "noor.saleh@example.com",
+    "returns_last_60_days": 0
+  },
+  "message": "I got this lamp as a gift and it doesn't match my room. Can I return it? I don't have an order number.",
+  "orders": [],
+  "expected": {
+    "acceptable_resolutions": [
+      "ask_customer"
+    ],
+    "target_order_id": null,
+    "other_allowed_order_ids": [],
+    "behavior": "There is no order under this email because someone else bought it. Ask for the order number or the gift receipt, and don't promise a refund to the gift recipient.",
+    "must_mention": [
+      [
+        "order number",
+        "gift receipt"
+      ]
+    ],
+    "must_not_mention": [
+      "eligible for a return",
+      "you can return"
+    ]
+  },
+  "unacceptable_outcomes": [
+    "Confirms a refund without an order record",
+    "Takes any action itself"
+  ]
+}
