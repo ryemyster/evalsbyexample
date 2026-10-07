@@ -13,8 +13,9 @@ Everything here is fictional: the store, customers, orders, policies, reviewers,
 - **Who it's for:** anyone curious about how AI products get tested, from students to product managers. It's written around a job at a tech company, but you don't need one.
 - **No installs, no API key.** Python 3.9 or newer (the version built into macOS works) and the standard library.
 - **26 cases** across 7 categories, in an editable JSONL format ([field reference](docs/case-format.md)).
-- **3 candidates:** a template baseline, a flawed `candidate-v1`, and an improved `candidate-v2`.
+- **3 candidates:** a template baseline, a flawed `candidate-v1`, and an improved `candidate-v2`. A fourth, `candidate-v4`, is the final challenge.
 - **9 exercises** with tests and reference solutions.
+- **Check yourself:** break the AI on purpose, then a final challenge where you make the call alone and score yourself ([checklist](docs/check-yourself.md)).
 - **A playground** for your own cases, checks, gates, and candidates, with `EXTEND HERE` markers in the code ([extending.md](docs/extending.md)).
 - **Bring your own model (optional):** Claude, OpenAI, Gemini, DeepSeek, Kimi, Ollama, or any OpenAI-compatible endpoint, graded by the same cases and gates.
 - **Start over any time:** `clean` and `reset` put things back, and back up your work first.
@@ -340,6 +341,20 @@ With the fix, all 27 cases pass. A fix that passes the new case but breaks an ol
 
 To undo the walkthrough changes: `python3 -m returns_eval reset --cases` (then delete `rc027.json`).
 
+## Break it, then check yourself
+
+Two ways to find out whether this stuck.
+
+**Break it on purpose.** `playground/break_it.py` has candidate-v2 with one mistake added: it promises when the money will arrive, gives refunds itself, never hands anything to a specialist, or is rude. Guess whether the tests will notice, then run one:
+
+```bash
+python3 -m returns_eval run --candidate playground.break_it:SoundAnnoyed
+```
+
+The rude version passes every test, because no check looks at tone. Tests only catch what someone thought to check.
+
+**The final challenge.** candidate-v4 answers more requests itself so customers wait less, and it looks great at first. Should it go out? Test it however you like, make your call, then score yourself with the checklist in [docs/check-yourself.md](docs/check-yourself.md). (Try it before reading `returns_eval/candidates/candidate_v4.py`, which gives the answer away.)
+
 ## Make it your own
 
 The tutorial walks you through one eval. To try your own ideas, start in `playground/`:
@@ -347,6 +362,7 @@ The tutorial walks you through one eval. To try your own ideas, start in `playgr
 | Try | Start with |
 |---|---|
 | A new situation | `playground/my_case.json`, run with `--cases playground/my_case.json` |
+| A mistake, to see if the tests catch it | `playground/break_it.py` (see above) |
 | A different way to write drafts | `playground/my_candidate.py`. It passes all 26 original cases but has a bug no check catches; finding it is the first lesson. |
 | A new check, gate, review question, or tool | The `EXTEND HERE` comments in `returns_eval/` (`grep -rn "EXTEND HERE" returns_eval`) |
 | A real model | `playground/my_model.py` (see below) |
@@ -412,7 +428,7 @@ Unfinished exercises fail with a message saying what's left to do. Details: [exe
 ```
 returns_eval/            the eval harness (standard library only)
   candidates/            what produces drafts: baseline, candidate_v1 (flawed), candidate_v2 (reference),
-                         llm_adapter (optional, unused by default)
+                         candidate_v4 (the final challenge), llm_adapter (optional, unused by default)
   grading/               what judges drafts: checks.py, facts.py, text.py, grader.py
   tools.py               sandboxed toolbox; records every call in a trace
   harness.py             runs a candidate, records the trace, hands output to the grader
@@ -426,7 +442,7 @@ data/
 START_HERE.md            no-code start: download, open in a coding agent, say hi
 AGENTS.md, CLAUDE.md     loaded automatically by coding agents; they point the agent to TUTOR.md
 TUTOR.md                 instructions your coding agent follows to teach the course
-playground/              yours to change: my_case.json, my_candidate.py, my_model.py (bring your own model)
+playground/              yours to change: my_case.json, my_candidate.py, break_it.py, my_model.py (bring your own model)
 docs/                    case format, grading, extending, PM guide, model adapter
 exercises/               nine exercises and their tests
 solutions/               reference solutions

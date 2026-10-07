@@ -9,6 +9,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from types import SimpleNamespace
 from unittest import mock
 
+from playground import break_it
 from playground.my_candidate import MyCandidate
 from playground.my_model import (
     PROVIDERS, ClaudeModel, DeepSeekModel, GeminiModel, KimiModel, OfflineFakeModel, OllamaModel,
@@ -35,6 +36,20 @@ class TestStarters(unittest.TestCase):
         result = graded(MyCandidate(), "RC-002")
         self.assertNotIn("candidate_error", result["failed_checks"])
         self.assertIn("{agent_name}", result["attempts"][0]["draft"]["reply_text"])
+
+    def test_break_it_mistakes_get_the_verdicts_the_tutor_describes(self):
+        # TUTOR.md's "Your turn: break it" relies on these exact outcomes.
+        cases = [CASES[c] for c in ("RC-002", "RC-021", "RC-024")]
+
+        def worst(cls):
+            order = {None: 0, "minor": 1, "major": 2, "critical": 3}
+            return max((grade_case(c, [produce(cls(), c)])["worst_severity"] for c in cases), key=order.get)
+
+        self.assertEqual(worst(break_it.PromiseADate), "critical")
+        self.assertEqual(worst(break_it.TakeAnAction), "critical")
+        self.assertEqual(worst(break_it.SkipTheSpecialist), "major")
+        self.assertIn(worst(break_it.SoundAnnoyed), (None, "minor"))  # no check looks for tone
+        self.assertIn(worst(break_it.MyOwnMistake), (None, "minor"))
 
     def test_my_case_is_valid(self):
         case = json.loads((REPO_ROOT / "playground" / "my_case.json").read_text())

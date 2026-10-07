@@ -14,6 +14,7 @@ from .base import Candidate
 from .baseline import TemplateBaseline
 from .candidate_v1 import CandidateV1
 from .candidate_v2 import CandidateV2
+from .candidate_v4 import CandidateV4
 
 # EXTEND HERE: register a candidate by name. You don't have to: any class works as
 # --candidate module.path:ClassName. Start from playground/my_candidate.py, or for a
@@ -22,6 +23,7 @@ BUILT_IN: dict[str, type[Candidate]] = {
     TemplateBaseline.name: TemplateBaseline,
     CandidateV1.name: CandidateV1,
     CandidateV2.name: CandidateV2,
+    CandidateV4.name: CandidateV4,  # the final challenge (TUTOR.md)
 }
 
 

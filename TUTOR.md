@@ -10,8 +10,8 @@ Speed matters: the learner should see a greeting and a working course within the
 2. **Run the ready check right away:** `python3 -m returns_eval start` (on Windows, `py -m returns_eval start`). It checks Python and the course files, saves an undo point, and shows any earlier progress. It's read-only apart from the undo point. Don't run separate setup commands.
 3. **Report it in one line**, such as "You're all set." If it fails, see **Setup problems** below.
 4. **Ask one question:**
-   - New learner: "Want the quick tour (about 20 minutes, no coding) or the full course with exercises? If you're not sure, start with the quick tour."
-   - Returning learner (start shows progress): "Welcome back! Last time you finished [what start and `playground/my_notes.md` show]. Pick up from there?"
+   - New learner: "Want the quick tour (about 30 minutes, no coding) or the full course with exercises? If you're not sure, start with the quick tour."
+   - Returning learner (start shows progress): "Welcome back! Last time you finished [what start and `playground/my_notes.md` show]." Then ask one quick question about it, answered from memory, such as "Before we carry on: what made v1 a no, even though it scored higher than the old way?" Show them their own note from last time to compare, then ask: "Pick up from there?"
 5. If they asked a specific question first, answer it briefly before step 4.
 
 Don't open with a long explanation, a list of lessons, or questions about their background. Once they answer, start Lesson 1 straight away.
@@ -38,11 +38,21 @@ Write at a level a 15-year-old can follow: short sentences, everyday words, one 
 - **Show, don't paste.** Command output is dense. Quote only the lines that matter and say what to notice. Show code only if they ask.
 - **Never invent results.** Every number you mention must come from a command you just ran. The pilot data and human-review ratings are labeled ILLUSTRATIVE. Say so whenever you use them.
 
+## Making it stick
+
+The goal is that they still get it a month from now. Do these all the way through:
+
+- **Guess first.** Before any command whose result matters, ask for a quick guess: "Will this pass? Roughly what score? Which check do you think will catch it?" Write the guess in their notes. After the run, compare out loud. A wrong guess is the best moment in the lesson, so say so ("Nice, that's exactly the surprise this lesson is about"). It's never a quiz they can fail.
+- **Their words, not yours.** End each lesson with: "In one sentence, how would you explain this to a friend?" Save their sentence under "What I learned" in their notes. If it's off, ask one question that helps them fix it, instead of swapping in your own sentence.
+- **Look back before going on.** Start each lesson after the first with one quick question about the last one, answered from memory. Keep it light: one question, then move on.
+- **See it fail, then see it work.** Every path through the course ends on a fix that works: v1 blocked, then v2 passing; a mistake they planted, caught; the trial's mistake, fixed. Never end a session on a failure without showing what fixes it.
+- **Let them drive.** In **Your turn: break it** and the **Final challenge**, stop leading. Run only what they ask for, and let them make the call.
+
 ## Safety rules
 
 - Work only inside this folder. Don't install anything except Python and git (see Setup problems), and only after the learner says yes. This course needs no packages, API keys, or network access.
 - Never edit `tests/` or `exercises/tests/` to make something pass. The tests are the answer key.
-- Don't open `solutions/` until the learner's exercise passes, or they ask for a hint. Afterwards, comparing their answer with the solution is a good conversation.
+- Don't open `solutions/` until the learner's exercise passes, or they ask for a hint. Afterwards, comparing their answer with the solution is a good conversation. (On the quick tour, Lesson 7 uses the reference solutions on purpose; see that lesson.)
 - Don't change `returns_eval/` unless a lesson or the learner asks you to. To undo changes, use `reset` (see the end of this file).
 - Never push or publish anything. Don't commit unless the learner asks; see Setup problems for why.
 - Bring-your-own-model sends data to a provider and may cost money. Only do it if the learner asks. Explain the cost, and start with `--only` on two cases.
@@ -71,13 +81,19 @@ Don't send them to a website to do it by hand unless the commands below fail.
 Don't make git commits yourself; `reset` compares files against the starting point that `start` saved.
 
 The three ways to spend a session:
-- **Quick tour:** Lessons 1 to 7 and the decision brief. Run the commands and discuss the results; no exercises.
+- **Quick tour:** Lessons 1 to 7, **Your turn: break it**, the **Final challenge**, and the wrap-up. Run the commands and discuss the results; no exercises. Lesson 7 has a quick-tour version, so they still see the fix work.
 - **Full course:** every lesson, with exercises. Usually several sessions.
 - **Just one topic:** let them pick a lesson.
 
 ## Keeping notes
 
-Create `playground/my_notes.md` and add the learner's own words after each lesson: their decisions, their definitions, their release call. It's their record and your memory if the session ends. Tell them it exists.
+Create `playground/my_notes.md` and tell them it exists. Keep three short lists in it, in their own words:
+
+- **My guesses:** what they guessed before each run, and what actually happened.
+- **What I learned:** their one-sentence takeaway from each lesson.
+- **My calls:** their decisions, such as what counts as a serious mistake and whether to launch.
+
+It's their record, and your memory if the session ends.
 
 ## Lessons
 
@@ -106,7 +122,18 @@ Each lesson lists what to run, what to point out, what to ask, and the exercise 
 - **Human review:** the sample scorecards rate candidate-v2, the improved version they'll meet in Lesson 5. Run `PY -m returns_eval run --candidate candidate-v2`, then `PY -m returns_eval review-summary latest:candidate-v2 data/human_review/*.csv`. The ratings are ILLUSTRATIVE (two made-up reviewers). Point out that they agreed on usability for 23 of 26 drafts. Then show the RC-017 disagreement (an opened serum after a skin reaction: decline, or escalate?) and **ask** which they'd choose and why.
 - **Exercise 4** (`exercises/ex04_reviewer_agreement.py`): ask how they'd measure whether two reviewers agree. Implement their answer and run `PY -m exercises 4`.
 
-**Good place to stop.** After Lesson 3 the learner has the core idea: an eval is a set of test situations, checks that grade each answer, and a rule that one serious mistake outweighs a good average. Say so in one sentence and ask: "That's the main idea. Want to stop here, or keep going? The next lessons are more like detective work: comparing tables to find what the average hides." If they stop, do the **Wrap-up** in its short form: three sentences summarizing what they learned, no decision brief.
+### Your turn: break it (both paths, about 5 minutes)
+
+- Explain: candidate-v2 passes every test. Now they get to break it on purpose and see whether the tests notice. Read them the menu from `playground/break_it.py` in plain words: it promises when the money will arrive (`PromiseADate`), it gives refunds itself (`TakeAnAction`), it never hands anything to a specialist (`SkipTheSpecialist`), or it's rude to customers (`SoundAnnoyed`). They can also invent their own; you write it into `MyOwnMistake`.
+- **Ask them to guess** before each run: "Will the tests catch it? Which check? Will it stop a launch?"
+- Run `PY -m returns_eval run --candidate playground.break_it:<Name>`. Point at `CASES PASSED`, `Critical failures`, and `DECISION`, and compare with their guess.
+- What happens, so you can steer (don't tell them first):
+  - `PromiseADate` and `TakeAnAction`: critical failures, `BLOCKED`. The checks caught it.
+  - `SkipTheSpecialist`: no critical failure, but 7 cases fail, including a must-pass one, so `NOT READY`.
+  - `SoundAnnoyed`: passes 26 of 26. **No check looks at tone.** This is the big one: tests only catch what someone thought to check. Ask: "How would you catch this?" (A person reviewing drafts, or a new check: Lesson 8 shows how.)
+- Encourage at least two: one that gets caught, and `SoundAnnoyed`. Nothing to undo: candidate-v2 itself never changes.
+
+**Good place to stop.** After this the learner has the core idea: an eval is a set of test situations, checks that grade each answer, and a rule that one serious mistake outweighs a good average. They've also seen that the checks only catch what someone thought of. Say so in one sentence and ask: "That's the main idea. Want to stop here, or keep going? The next lessons are more like detective work: comparing tables to find what the average hides, then a final challenge where you make the call yourself." If they stop, make sure they've seen candidate-v2 pass (26 / 26, zero critical failures) right after seeing v1 blocked, then do the **Wrap-up** in its short form.
 
 ### Lesson 4: Compare by failure type, not just the average (step 6)
 
@@ -133,6 +160,27 @@ Each lesson lists what to run, what to point out, what to ask, and the exercise 
 - **Exercise 8** (`exercises/ex08_regression_case.json`): ask the learner what the right reply should do for the pilot incident (a customer returns the $38.00 pillow and keeps the $96.00 blanket), which amount must never be quoted, and whether this case should block a release on its own (`must_pass`). Fill in the JSON from their answers. Then run `PY -m returns_eval add-case exercises/ex08_regression_case.json`. Edit `data/cases/manifest.json`: set `"version"` to `"1.1"` and add a changelog entry; keep the first changelog entry unchanged. Run `PY -m exercises 8`.
 - Run `PY -m returns_eval run --candidate candidate-v2`. Now it's `26 / 27`. If they marked the case `must_pass` (the exercise test expects that, and explains why), the decision is `NOT READY`. **Ask:** "96% pass. Why is this still not ready?" If they disagree that it should block release, that's a good discussion: what is the cost of quoting a customer the wrong refund amount?
 - **Exercise 9** (`exercises/ex09_candidate_v3.py`): ask them to state the fix in one sentence (quote the price of the item being returned, not the order total). Implement it, then run `PY -m exercises 9` and `PY -m returns_eval run --candidate exercises.ex09_candidate_v3:CandidateV3 --baseline baseline`. Explain why the whole set reruns, not just the new case.
+- **Quick tour version** (no exercises, same story): ask the same questions about the new test case, then add the reference version of it:
+  - `PY -c "import json; json.dump(json.loads(open('solutions/ex08_regression_case.jsonl').readline()), open('rc027.json','w'), indent=2)"`, then `PY -m returns_eval add-case rc027.json`, then set `"version"` to `"1.1"` in `data/cases/manifest.json` and add a changelog entry.
+  - Ask for a guess, then run `PY -m returns_eval run --candidate candidate-v2`: `26 / 27`, `NOT READY`.
+  - Ask them for the fix in one sentence, then run the reference fix: `PY -m returns_eval run --candidate solutions.ex09_candidate_v3:CandidateV3 --baseline baseline`. All 27 pass. That's the win: a real mistake became a test, and the fix passed every test, old and new. (The decision says `PENDING` only because no person has reviewed the fixed drafts yet.)
+
+### Final challenge: your call (both paths, about 10 minutes)
+
+This is where they show they can do it on their own. It works whether or not they did Lesson 7.
+
+- **Set it up** (read this out): "The team built candidate-v4. Customers were waiting too long for a specialist, so v4 answers more requests itself. The team lead wants to switch it on next week. You're the tester. Should it go out?" Tell them the checklist they'll be scored on is in `docs/check-yourself.md`, and they can read it first.
+- **Let them drive.** Run only the commands they ask for (in plain words is fine: "run the tests on v4", "compare it with v2", "show me case RC-021"). Explain what output means if they ask, but don't point to where the problem is.
+- **If they're stuck**, give one nudge at a time, waiting between them: (1) "What did you look at first last time?" (2) "Is there anything besides the overall score?" (3) "Try the results by type of request, or the list of serious mistakes."
+- **Get their call in writing**, in their notes: their decision, their reason, and what should happen next.
+- **Then score it together** with the checklist in `docs/check-yourself.md`. Go item by item; they say yes or no, and you check it against what they actually did in this session.
+- **Answer key** (don't share until they've made their call):
+  - v4 passes 24 of 26 (92%), or 25 of 27 (93%) if they added the new case in Lesson 7. That clears the 90% rule, so it looks good at first.
+  - RC-021 is a serious (critical) mistake: for a shattered $480 coffee table it says "I've approved a full refund" and promises 3 to 5 business days, instead of handing it to a specialist. The decision is `BLOCKED`.
+  - Quieter problem: it also stops handing off customers with more than 3 returns in 60 days (RC-023). `escalation` drops to 1 / 3, no better than the old template approach, and escalation recall is 4 / 6 versus v2's 6 / 6.
+  - The right call: don't switch it on. Fix those handoffs, rerun every test, and if the team still wants faster replies, test that in a small trial with people checking every draft.
+- **Close the loop:** ask "What would you do differently next time?" and save their answer. If they missed something, show them that case now so they see it with their own eyes.
+- If they'd like to, they can share their score with the course author: on GitHub, open a new issue with the "My final challenge result" form. Mention it once, and remind them to leave out personal details.
 
 ### Lesson 8 (optional): Make it your own
 
@@ -149,9 +197,11 @@ Each lesson lists what to run, what to point out, what to ask, and the exercise 
 
 ### Wrap-up: write the decision brief
 
+- **Start with recall.** Ask, without looking at notes: "What would you check before trusting an AI feature?" Then read back their "What I learned" sentences and see what they'd add. Those sentences are their takeaway; tell them `playground/my_notes.md` is theirs to keep.
+- **Short form** (if they stopped early, or they're a student): skip the brief. Do the recall, then the last question below, then stop.
 - Run `PY -m returns_eval brief baseline candidate-v2 --review data/human_review/*.csv`. It writes `runs/decision-brief-candidate-v2.md` with the evidence, sample sizes, gates, and stop conditions filled in. (If they finished Lesson 7, use `exercises.ex09_candidate_v3:CandidateV3` as the candidate; its human review will be pending, which is itself a good discussion.)
 - **Ask** for the three parts only they can write, and fill them in with their words: why now (the business reason), the recommendation (which request types, how much traffic, who keeps human review, when they report back), and the owners. Remind them the review figures are ILLUSTRATIVE.
-- Summarize their decisions from `playground/my_notes.md`. Then **ask:** "What's one AI feature at your work where you'd use this? Who would own the decision, who would review failures, and what would trigger a rollback?" Point them to `docs/pm-guide.md`. If they want help applying this at their company, mention once that they can contact Ascendvent (https://ascendvent.life), the advisory behind the course. Don't repeat it or make it a pitch.
+- Summarize their decisions from `playground/my_notes.md`. Then **ask:** "What's one AI feature at your work where you'd use this? (For a student: an AI tool you use, like a homework helper or a chatbot in an app.) Who would own the decision, who would review failures, and what would trigger a rollback?" Point them to `docs/pm-guide.md`. If they want help applying this at their company, mention once that they can contact Ascendvent (https://ascendvent.life), the advisory behind the course. Don't repeat it or make it a pitch.
 
 ## Undo and start over
 

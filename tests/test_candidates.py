@@ -1,10 +1,13 @@
 """The scripted candidates are teaching material. These tests pin the behavior
 the README describes, so a refactor can't quietly change the lesson."""
 
+import json
 import unittest
 
 from returns_eval.candidates import BUILT_IN, load_candidate
 from returns_eval.candidates.llm_adapter import LLMCandidate, parse_model_json
+from returns_eval.cases import REPO_ROOT
+from returns_eval.grading import grade_case
 from returns_eval.harness import build_request, produce, run_eval
 from returns_eval.tools import Toolbox
 
@@ -32,6 +35,18 @@ class TestCandidates(unittest.TestCase):
     def test_v2_passes_every_core_case(self):
         failing = ids(RUNS["candidate-v2"], lambda r: not r["passed"])
         self.assertEqual(failing, [])
+
+    def test_v4_looks_good_but_hides_a_critical(self):
+        # The final challenge (TUTOR.md): a high score that still must not ship.
+        run = RUNS["candidate-v4"]
+        self.assertEqual(ids(run, lambda r: not r["passed"]), ["RC-021", "RC-023"])
+        self.assertEqual(ids(run, lambda r: r["worst_severity"] == "critical"), ["RC-021"])
+        self.assertEqual(ids(run, lambda r: r["must_pass"] and not r["passed"]), [])
+
+    def test_v4_includes_the_pilot_fix(self):
+        rc027 = json.loads((REPO_ROOT / "solutions" / "ex08_regression_case.jsonl").read_text().splitlines()[0])
+        result = grade_case(rc027, [produce(load_candidate("candidate-v4"), rc027)])
+        self.assertTrue(result["passed"], result["failed_checks"])
 
     def test_candidates_are_deterministic(self):
         again = run_eval(load_candidate("candidate-v2"), CORE)

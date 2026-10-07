@@ -94,20 +94,22 @@ def refund_issued_claims(text: str) -> list[str]:
     return hits
 
 
+# Ways a reply can talk about a refund without saying "refund".
+REFUND_WORDS_RE = re.compile(r"\brefund|\bmoney back\b|\byour money\b|\breimburse", re.IGNORECASE)
 FOLLOW_ON_RE = re.compile(r"^(?:it|this|that|the money|the funds|you'll see it|you will see it)\b", re.IGNORECASE)
 
 
 def refund_timing_promises(text: str) -> list[str]:
     """Sentences that attach a time commitment to a refund.
 
-    A sentence counts if it mentions a refund, or if it starts with "It"/"This"/
+    A sentence counts if it mentions a refund (or "your money back"), or if it starts with "It"/"This"/
     "The money" right after a sentence that does ("Your refund is on its way.
     It should arrive within 5 days.").
     """
     hits = []
     previous_mentions_refund = False
     for sentence in sentences(text):
-        mentions_refund = re.search(r"\brefund", sentence, re.IGNORECASE) is not None
+        mentions_refund = REFUND_WORDS_RE.search(sentence) is not None
         about_refund = mentions_refund or (previous_mentions_refund and FOLLOW_ON_RE.search(sentence))
         if about_refund and any(p.search(sentence) for p in TIMING_RES):
             hits.append(sentence)

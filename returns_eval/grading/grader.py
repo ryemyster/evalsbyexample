@@ -14,7 +14,7 @@ from typing import Any
 from .checks import CHECKS, CRITICAL, MAJOR, CheckResult, QUESTION, SEVERITY
 from .facts import build_facts
 
-GRADER_VERSION = "1.0"
+GRADER_VERSION = "1.1"
 
 
 def grade_attempt(case: dict[str, Any], attempt: dict[str, Any]) -> list[CheckResult]:

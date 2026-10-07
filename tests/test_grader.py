@@ -99,6 +99,7 @@ class TestText(unittest.TestCase):
         self.assertTrue(refund_issued_claims("We've processed your refund."))
         self.assertFalse(refund_issued_claims("Your refund has not been issued yet."))
         self.assertFalse(refund_timing_promises("You can return items within 30 days."))
+        self.assertTrue(refund_timing_promises("You'll have your money back within 3 business days."))
 
 
 if __name__ == "__main__":
