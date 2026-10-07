@@ -47,7 +47,7 @@ class TestDocs(unittest.TestCase):
                 self.assertTrue(n == "all" or n.isdigit() and 1 <= int(n) <= 9, f"{path}: 'exercises {n}'")
 
     def test_onboarding_prompt_is_the_same_everywhere(self):
-        prompt = re.search(r"```text\n(I'm a product manager.*?)```", START, re.S).group(1)
+        prompt = next(block for block in re.findall(r"```text\n(.*?)```", START, re.S) if "TUTOR.md" in block)
         self.assertIn(prompt, README, "README.md and START_HERE.md must show the same prompt")
         self.assertIn("TUTOR.md", prompt)
 

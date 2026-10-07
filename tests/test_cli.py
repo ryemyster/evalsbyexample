@@ -45,7 +45,7 @@ class TestCLI(unittest.TestCase):
     def test_case_detail(self):
         code, text = cli("report", self.runs["candidate-v1"], "--case", "RC-001")
         self.assertEqual(code, 0, text)
-        for part in ("EXPECTED BEHAVIOR", "TRACE", "refund_commitment", "RESULT: FAIL (worst severity: critical)"):
+        for part in ("WHAT A GOOD REPLY DOES", "WHAT IT LOOKED UP", "refund_commitment", "RESULT: FAIL (worst severity: critical)"):
             self.assertIn(part, text)
 
     def test_gate_exit_codes(self):

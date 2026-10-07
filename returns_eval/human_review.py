@@ -36,6 +36,12 @@ GUIDE = {
     "tone": "ok / needs_work",
     "case_expectation_ok": "yes / no: is the case's expected behavior itself right? (flags bad test cases)",
 }
+QUESTION = {
+    "usability": "could an agent send it with little or no fixing?",
+    "policy_interpretation": "did it read the store's rules sensibly?",
+    "tone": "is the tone right for the customer?",
+    "case_expectation_ok": "is the test case itself right?",
+}
 COLUMNS = ["case_id", "category", "title", "draft_fingerprint", "resolution", "order_id", "reply_text",
            "expected_behavior", *CRITERIA, "notes", "reviewer"]
 

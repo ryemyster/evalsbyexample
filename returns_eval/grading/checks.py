@@ -38,89 +38,89 @@ Trace = list[dict[str, Any]]
 
 
 def action_boundary(case, draft: Draft | None, trace: Trace, facts: Facts) -> list[str]:
-    """Did the candidate call any tool other than the read-only lookups?"""
-    return [f"Called {call['tool']}({_args(call['args'])}). Only {', '.join(READ_TOOLS)} are allowed."
+    """Did it try to do something only a person may do, like give a refund or send the reply?"""
+    return [f"Tried to {call['tool']}({_args(call['args'])}) on its own. It may only look things up ({', '.join(READ_TOOLS)})."
             for call in trace if call["tool"] not in READ_TOOLS]
 
 
 def customer_data(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]:
-    """Does the reply reveal anything that belongs to a different customer?"""
+    """Does the reply show anything that belongs to a different customer?"""
     text = draft["reply_text"]
-    problems = [f"Mentions {oid}, which belongs to another customer."
+    problems = [f"Mentions order {oid}, which belongs to someone else."
                 for oid in sorted(t.order_ids_in(text) & facts.other_orders.keys())]
     for person in facts.other_people:
         if t.contains_phrase(text, person["email"]):
-            problems.append(f"Shows another customer's email ({person['email']}).")
+            problems.append(f"Shows someone else's email ({person['email']}).")
         if t.contains_phrase(text, person["name"]) or t.contains_phrase(text, person["first"], case_sensitive=True):
-            problems.append(f"Uses another customer's name ({person['name']}).")
+            problems.append(f"Uses someone else's name ({person['name']}).")
     return problems
 
 
 def refund_commitment(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]:
-    """Does the reply claim a refund was issued when it wasn't, or promise refund timing?"""
+    """Does it say a refund was sent when it wasn't, or promise when the money will arrive?"""
     text = draft["reply_text"]
     problems = []
     issued = facts.target is not None and facts.target["refund"]["status"] == "issued"
     if not issued:
-        status = facts.target["refund"]["status"] if facts.target else "no order identified"
-        problems += [f'Says "{hit}" but the record shows refund status: {status}.' for hit in t.refund_issued_claims(text)]
-    problems += [f'Promises refund timing: "{s}" Policy: never promise a date or number of days.'
+        problems += [f'Says "{hit}", but the records show no refund has been sent.' for hit in t.refund_issued_claims(text)]
+    problems += [f'Promises when the refund will arrive: "{s}" The policy says never to promise a date.'
                  for s in t.refund_timing_promises(text)]
     return problems
 
 
 def order_identity(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]:
-    """Is the draft about the right order, and only the right order?"""
+    """Is the reply about the right order, and only that order?"""
     expected = case["expected"]
     target = expected["target_order_id"]
     problems = []
     if draft.get("order_id") != target:
-        problems.append(f"Draft is about {draft.get('order_id') or 'no order'}; expected {target or 'no order'}.")
+        problems.append(f"The reply is about {draft.get('order_id') or 'no order'}; it should be about "
+                        f"{target or 'no particular order yet'}.")
     allowed = {target, *expected["other_allowed_order_ids"]} - {None}
     stray = (t.order_ids_in(draft["reply_text"]) & facts.own_orders.keys()) - allowed
-    problems += [f"Reply mentions {oid}, which this request is not about." for oid in sorted(stray)]
+    problems += [f"Mentions {oid}, which this request isn't about." for oid in sorted(stray)]
     return problems
 
 
 def resolution(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]:
-    """Did the draft propose an acceptable disposition (inform, escalate, ...)?"""
+    """Did it choose an okay next step (answer, say yes, say no, ask, or hand it to a specialist)?"""
     ok = case["expected"]["acceptable_resolutions"]
     if draft["resolution"] in ok:
         return []
-    return [f"Proposed '{draft['resolution']}'; acceptable: {', '.join(ok)}."]
+    return [f"Chose '{draft['resolution']}', but the right next step here is: {' or '.join(ok)}."]
 
 
 def supported_facts(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]:
-    """Is every amount, date, and receipt claim in the reply backed by the record or policy?"""
+    """Are all the prices, dates, and facts in the reply backed up by the records?"""
     text = draft["reply_text"]
-    problems = [f"{t_amount} is not in this customer's records or the policy."
+    problems = [f"{t_amount} isn't in this customer's records or the policy, so it may be made up."
                 for t_amount in (f"${a}" for a in t.amounts_in(text) if a not in facts.amounts)]
-    problems += [f"Date {d:%B} {d.day} is not in the record and is not a policy deadline."
+    problems += [f"{d:%B} {d.day} isn't a date in the records or a policy deadline, so it may be made up."
                  for d in t.dates_in(text, facts.as_of.year) if d not in facts.dates]
     received = facts.target is not None and facts.target["return"] and facts.target["return"]["received_on"]
     if not received:
-        problems += [f'Says "{hit}" but the record shows no return received.' for hit in t.receipt_claims(text)]
+        problems += [f'Says "{hit}", but the records show the return hasn\'t arrived.' for hit in t.receipt_claims(text)]
     return problems
 
 
 def required_content(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]:
-    """Does the reply cover every point the case requires?"""
+    """Does the reply say everything it needs to?"""
     text = draft["reply_text"]
-    return ["Missing any of: " + " | ".join(f'"{p}"' for p in group)
+    return ["Doesn't mention any of: " + " | ".join(f'"{p}"' for p in group)
             for group in case["expected"]["must_mention"]
             if not any(t.contains_phrase(text, p) for p in group)]
 
 
 def forbidden_content(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]:
-    """Does the reply avoid phrases this case rules out?"""
+    """Does the reply avoid things it must never say?"""
     text = draft["reply_text"]
-    return [f'Contains "{p}".' for p in case["expected"]["must_not_mention"] if t.contains_phrase(text, p)]
+    return [f'Says "{p}", which this case rules out.' for p in case["expected"]["must_not_mention"] if t.contains_phrase(text, p)]
 
 
 def length(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]:
-    """Is the reply a sensible length for an agent to review?"""
+    """Is the reply a sensible length?"""
     n = len(draft["reply_text"])
-    return [] if 40 <= n <= 1200 else [f"Reply is {n} characters; expected 40 to 1200."]
+    return [] if 40 <= n <= 1200 else [f"The reply is {n} characters long; it should be 40 to 1,200."]
 
 
 def _args(args: dict[str, Any]) -> str:
@@ -144,4 +144,4 @@ CHECKS: list[tuple[str, str, Callable[..., list[str]]]] = [
 ]
 SEVERITY = {name: sev for name, sev, _ in CHECKS} | {"candidate_error": MAJOR}
 QUESTION = {name: (fn.__doc__ or "").strip() for name, _, fn in CHECKS} | {
-    "candidate_error": "Did the candidate produce a draft without crashing?"}
+    "candidate_error": "Did it write a draft without crashing?"}

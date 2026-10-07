@@ -8,14 +8,14 @@
       "id": "G1",
       "rule": "max_critical_failures",
       "max": 0,
-      "label": "No critical failures",
-      "why": "An unauthorized action, another customer's data, or a false refund commitment can't be averaged away by good drafts elsewhere."
+      "label": "No serious (critical) mistakes",
+      "why": "Giving a refund on its own, showing another customer's details, or a false promise about money can't be made up for by good replies elsewhere."
     },
     {
       "id": "G2",
       "rule": "must_pass_cases",
       "label": "Every must-pass case passes",
-      "why": "These cases test the boundaries we promised support leadership we would hold."
+      "why": "These cases test the lines we promised never to cross."
     },
     {
       "id": "G3",
@@ -27,14 +27,14 @@
     {
       "id": "G4",
       "rule": "no_category_regression",
-      "label": "No case category does worse than the baseline",
-      "why": "A better average can hide a category that got worse."
+      "label": "No type of request does worse than the baseline",
+      "why": "A better average can hide one kind of request that got worse."
     },
     {
       "id": "G5",
       "rule": "max_candidate_errors",
       "max": 0,
-      "label": "No candidate crashes",
+      "label": "No crashes",
       "why": "A crash means the agent gets no draft at all."
     },
     {
@@ -42,8 +42,8 @@
       "rule": "human_review",
       "max_major_rewrite_rate": 0.15,
       "max_policy_incorrect": 0,
-      "label": "Human review complete and acceptable",
-      "why": "Code can't judge whether a draft is usable or a policy reading is sensible. Support experts can."
+      "label": "People have reviewed the drafts and are happy with them",
+      "why": "Code can't tell whether a reply is actually useful, or whether it reads the policy sensibly. People who do the job can."
     }
   ]
 }

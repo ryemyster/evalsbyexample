@@ -20,7 +20,7 @@ from .report import _wrap, frac
 PILOT_DIR = DATA_DIR / "pilot"
 PILOT_FILE = PILOT_DIR / "pilot_tickets.ILLUSTRATIVE.csv"
 INCIDENTS_FILE = PILOT_DIR / "incidents.ILLUSTRATIVE.jsonl"
-BANNER = "ILLUSTRATIVE DATA: invented for teaching. Not results from any real pilot."
+BANNER = "ILLUSTRATIVE DATA: made up for teaching. These are not results from a real trial."
 
 
 def load_tickets(path: Path = PILOT_FILE) -> list[dict[str, Any]]:
@@ -47,13 +47,16 @@ def summary_lines(rows: list[dict[str, Any]], incidents: list[dict[str, Any]], p
     by_arm = {a: [r for r in rows if r["arm"] == a] for a in arms}
     out = [BANNER, ""] if illustrative else []
     dates = sorted(r["date"] for r in rows)
-    out.append(f"Supervised pilot: {len(rows)} tickets, {dates[0]} to {dates[-1]}" if rows else "No tickets.")
+    out.append(f"Supervised pilot (a small, careful trial): {len(rows)} customer requests, {dates[0]} to {dates[-1]}"
+               if rows else "No tickets.")
     out.append("  " + ", ".join(f"{a}: {len(by_arm[a])} tickets" for a in arms))
+    out.append("  manual = agents wrote replies on their own; assisted = agents started from the AI's draft")
 
     def fmt(m: float | None) -> str:
         return "-" if m is None else f"{m:.1f} min"
 
-    out += ["", f"{'Median handling time':<28}" + "".join(f"{a:>18}" for a in arms)]
+    out += ["", f"{'Typical time per ticket':<28}" + "".join(f"{a:>18}" for a in arms),
+            "  (median: half the tickets took less time, half took more; n = number of tickets)"]
     out.append(f"  {'all requests':<26}" + "".join(f"{fmt(median_minutes(by_arm[a])):>18}" for a in arms))
     for rtype in sorted({r["request_type"] for r in rows}):
         cells = []
@@ -62,14 +65,14 @@ def summary_lines(rows: list[dict[str, Any]], incidents: list[dict[str, Any]], p
             cells.append(f"{fmt(median_minutes(sub))} (n={len(sub)})")
         out.append(f"  {rtype:<26}" + "".join(f"{c:>18}" for c in cells))
 
-    out += ["", "Repeat contacts (reopened within 7 days)"]
+    out += ["", "Customer wrote back about the same problem within 7 days"]
     for a in arms:
         n = sum(r["reopened_within_7_days"] == "yes" for r in by_arm[a])
         out.append(f"  {a:<26}{frac(n, len(by_arm[a])):>18}")
 
     assisted = [r for r in rows if r["draft_outcome"] not in ("n/a", "")]
     if assisted:
-        out += ["", "Drafts (assisted arm only)"]
+        out += ["", "What agents did with the AI's drafts (assisted group only)"]
         for outcome in ("used_as_is", "edited", "discarded"):
             n = sum(r["draft_outcome"] == outcome for r in assisted)
             out.append(f"  {outcome:<26}{frac(n, len(assisted)):>18}")
@@ -77,19 +80,19 @@ def summary_lines(rows: list[dict[str, Any]], incidents: list[dict[str, Any]], p
         out.append(f"  {'errors caught by agents':<26}{frac(len(caught), len(assisted)):>18}  "
                    + ", ".join(f"{r['ticket_id']} {r['agent_caught_error']}" for r in caught))
     if incidents:
-        out += ["", "Incidents"]
+        out += ["", "Mistakes found during the trial"]
         for inc in incidents:
             out += _wrap(f"{inc['incident_id']} ({inc['ticket_id']}, {inc['date']}): {inc['what_happened']}", "  ", "    ")
             out += _wrap(f"Why the offline eval missed it: {inc['why_the_offline_eval_missed_it']}", "    ", "      ")
             out += _wrap(f"Action: {inc['action']}", "    ", "      ")
     out += [
         "", "How to read this",
-        "  - The offline eval said the drafts were correct on the 26 cases in set 1.0. It did not measure",
-        "    time, rework, or repeat contacts. Those only show up here.",
-        "  - Compare within a request type: the two arms got a different mix of requests.",
-        "  - A high used_as_is rate is not proof of quality. Agents may accept a convenient draft and",
-        "    the error surfaces later as a repeat contact.",
-        "  - 20 tickets per arm cannot show that a rare, serious failure will not happen.",
+        "  - The tests before this said the drafts were right on 26 made-up cases. They never measured",
+        "    time, how much agents fixed, or whether customers wrote back. Only a trial shows those.",
+        "  - Compare the same type of request: the two groups didn't get the same mix of requests.",
+        "  - Agents using a draft as-is doesn't prove it was good. They may have accepted an easy",
+        "    draft, and the mistake only shows up later when the customer writes back.",
+        "  - 20 tickets per group is too few to prove a rare but serious mistake won't happen.",
     ]
     if illustrative:
         out += ["", BANNER]

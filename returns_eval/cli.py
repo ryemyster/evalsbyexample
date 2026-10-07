@@ -198,7 +198,7 @@ def cmd_start(args) -> int:
     print("Evals by example: ready check")
     line("Python", f"{plat.python_version()} ok")
     cs = load_case_set()
-    line("Course files", f"ok ({len(cs.cases)} cases, case set {cs.version}, {len(BUILT_IN)} candidates)")
+    line("Course files", f"ok ({len(cs.cases)} test cases, {len(BUILT_IN)} versions of the assistant to test)")
 
     status = "skipped (--no-save)" if args.no_save else workspace.save_starting_point()
     line("Undo", {
@@ -230,17 +230,18 @@ def cmd_start(args) -> int:
 def cmd_cases(args) -> int:
     cs = load_case_set(args.cases)
     rows = [c for c in cs.cases if not args.category or c["category"] == args.category]
-    print(f"Case set {cs.version} (sha {cs.sha256}) from {', '.join(cs.files)}: {len(rows)} of {len(cs.cases)} cases")
+    print(f"Showing {len(rows)} of {len(cs.cases)} cases (case set {cs.version}, id {cs.sha256}; files: {', '.join(cs.files)})")
     print()
-    print(f"{'ID':<8}{'CATEGORY':<21}{'MUST':<6}{'EXPECTED':<26}TITLE")
+    print(f"{'ID':<8}{'TYPE OF REQUEST':<21}{'MUST':<6}{'RIGHT NEXT STEP':<26}TITLE")
     for c in rows:
         must = "yes" if c["must_pass"] else ""
         expected = "/".join(c["expected"]["acceptable_resolutions"])
         print(f"{c['id']:<8}{c['category']:<21}{must:<6}{expected:<26}{c['title']}")
     print()
     counts = {cat: sum(c["category"] == cat for c in cs.cases) for cat in CASE_CATEGORIES}
-    print("Per category: " + ", ".join(f"{k} {v}" for k, v in counts.items() if v))
-    print("Details: python3 -m returns_eval show-case RC-001")
+    print("Per type of request: " + ", ".join(f"{k} {v}" for k, v in counts.items() if v))
+    print("MUST = a case that must pass, or the release is blocked.")
+    print("See one case in full: python3 -m returns_eval show-case RC-001")
     return 0
 
 
@@ -305,7 +306,7 @@ def cmd_run(args) -> int:
     worst = next((r for r in run["results"] if r["worst_severity"] == "critical"),
                  next((r for r in run["results"] if not r["passed"]), None))
     if worst:
-        print(f"Inspect a failure: python3 -m returns_eval report {_rel(path)} --case {worst['case_id']}")
+        print(f"Look at one failure in detail: python3 -m returns_eval report {_rel(path)} --case {worst['case_id']}")
     return 0
 
 
@@ -333,7 +334,7 @@ def cmd_compare(args) -> int:
     runs = [_run_or_load(item, case_set) for item in args.items]
     keys = {(r["meta"]["case_set_sha256"], r["meta"]["grader_version"]) for r in runs}
     if len(keys) > 1:
-        print("WARNING: these runs used different case sets or grader versions:")
+        print("WARNING: these runs used different case sets or grader versions, so comparing them isn't fair:")
         for r in runs:
             m = r["meta"]
             print(f"  {m['candidate']}: cases {m['case_set_version']} sha {m['case_set_sha256']}, grader {m['grader_version']}")
@@ -401,18 +402,20 @@ def cmd_review_summary(args) -> int:
         print(f"  Not yet reviewed: {', '.join(s.unreviewed)}")
     for p in problems:
         print(f"  Problem: {p}")
-    print("\nRatings (if reviewers differ, the worse rating counts)")
+    print("\nRatings (if two reviewers disagree, the worse rating counts)")
     for criterion, counts in s.counts.items():
         rated = sum(counts.values())
-        print(f"  {criterion}" + ("" if rated == s.reviewed else f" (rated on {rated} of {s.reviewed} drafts)"))
+        question = human_review.QUESTION.get(criterion)
+        print(f"  {criterion}" + (f" ({question})" if question else "")
+              + ("" if rated == s.reviewed else f" [rated on {rated} of {s.reviewed} drafts]"))
         for value, n in counts.items():
             print(f"    {value:<16}{report.frac(n, s.reviewed):>16}")
     for (a, b), crit in s.agreement.items():
-        print(f"\nAgreement between {a} and {b}")
+        print(f"\nHow often {a} and {b} gave the same rating")
         for c, (agree, total) in crit.items():
             print(f"  {c:<24}{report.frac(agree, total):>16}")
     if s.disagreements:
-        print("\nDisagreements to discuss (then tighten the rubric or fix the case):")
+        print("\nDisagreements to talk through (then make the rating guide clearer, or fix the case):")
         for d in s.disagreements:
             print(f"  {d}")
     return 0
@@ -469,10 +472,12 @@ def cmd_reset(args) -> int:
         if not changes:
             print("Everything is at the starting point. Nothing to reset.")
         else:
-            print(f"Files that differ from {args.ref}:")
+            since = "the start" if args.ref == "HEAD" else args.ref
+            print(f"Files you've changed since {since}:")
             for status, name in changes:
                 print(f"  {status:<9}{name}")
-            print("\nReset a part: --cases, --exercises [N ...], --playground, --code, --runs, or --all")
+            print("\nTo put a part back the way it was, use reset with: --cases, --exercises [N ...], "
+                  "--playground, --code, --runs, or --all")
         return 0
 
     if changes:
