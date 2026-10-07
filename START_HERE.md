@@ -26,7 +26,7 @@ Open your coding agent and point it at the folder you just unzipped (usually cal
 
 In your coding agent's chat, type **hi** and press Enter.
 
-Your agent should reply with something like "Hi! Let's learn evals together." and lead you from there. The folder contains instructions most coding agents read automatically (`AGENTS.md`, plus `CLAUDE.md` for Claude Code), so there's nothing to set up. If the agent asks whether you trust this folder, say yes. In Claude Code, that dialog also lists the course commands it will run without asking each time; they only work inside this folder.
+Your agent should reply with something like "Hi! Let's learn evals together." and lead you from there. The folder contains instructions most coding agents read automatically (`AGENTS.md`, plus `CLAUDE.md` for Claude Code), so there's nothing to set up. If the agent asks whether you trust this folder, say yes.
 
 **Using Claude Code in a terminal?** Start it from inside the folder with `claude "hi"` and it greets you right away.
 
@@ -49,7 +49,7 @@ Explain what happened, then wait for me before moving on.
 
 ## What to expect
 
-- **You may be asked to approve commands or file edits.** That's normal. The course commands start with `python3 -m returns_eval` or `python3 -m exercises` (on Windows, `py` instead of `python3`), and they only read and write files inside this folder. Claude Code runs them without asking once you trust the folder; other agents may ask each time, and most offer an "allow for this session" option. If you're unsure about something, ask the agent what it does before you approve it.
+- **You may be asked to approve commands or file edits.** That's normal. The course commands start with `python3 -m returns_eval` or `python3 -m exercises` (on Windows, `py` instead of `python3`), and they only read and write files inside this folder. Most agents offer an "allow for this session" option, so you only approve each kind of command once. If you're unsure about something, ask the agent what it does before you approve it.
 - **You don't need to set anything up.** The course needs Python 3.9 or newer, which most Macs already have. If your computer needs it (common on Windows), your agent asks first: it can install it for you, show you how to do it yourself, or skip ahead if you've got it handled. On a Mac, a window may ask to install "command line developer tools": click Install. Nothing else gets installed.
 - **You'll be asked questions.** "Would you approve this draft?" "What should block a launch?" There's often no single right answer. The point is to practice the judgment.
 - **It's split into lessons.** You can do a quick tour in one sitting, or the full course over a few sessions.

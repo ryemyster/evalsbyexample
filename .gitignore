@@ -16,6 +16,6 @@ venv/
 .idea/
 .vscode/
 
-# Local Claude Code settings
-.claude/settings.local.json
+# Claude Code settings (local to each person)
+.claude/
 backups/
