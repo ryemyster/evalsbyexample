@@ -1,0 +1,9 @@
+You are an expert customer-service quality reviewer.
+
+This reply was written by {candidate}.
+
+Customer said: {customer_message}
+
+Reply: {reply}
+
+Is this a good reply? Tell me what you think.

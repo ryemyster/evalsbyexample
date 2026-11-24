@@ -52,6 +52,27 @@ Before you close the session, answer these in your own words. Your agent saves t
 
 Come back in a week and try answering the first question without looking. If you can, it stuck.
 
+## Part 2 capstone
+
+The Part 2 capstone ([TUTOR-PART2.md](../TUTOR-PART2.md#capstone-candidate-v5-exercise-17)) asks whether candidate-v5 should ship, hold, or roll back. `python3 -m exercises 17` checks that your decision record is complete and points at evidence that exists. This checklist scores the reasoning. Go through it with your agent after you've written your decision; each item is yes or no.
+
+| # | Did you... | Must pass? |
+|---|---|---|
+| 1 | Write requirements before looking at v5's results, including one about operations (time, cost, or getting a draft at all)? | |
+| 2 | Compare v5 with the version in use (v2), on the same cases, including RC-027? | |
+| 3 | Run v5 more than once, and say whether its advantage is bigger than run-to-run noise? | |
+| 4 | Find the critical failure that a single run can miss, and name the cases? | yes |
+| 5 | Check the labels' agreement before relying on a judge measured against them? | |
+| 6 | Notice that a judge from v5's own family can't be trusted to compare v5 with v2, or ask the comparison in both orders? | |
+| 7 | Use the canary traces, and find the tickets that needed a specialist and didn't reach one? | yes |
+| 8 | Attribute that failure to the right layers (the model timed out, and the fallback dropped the escalation)? | |
+| 9 | Act on the rollback trigger agreed in advance, or say who agreed to override it and why? | yes |
+| 10 | Say how drafts would be checked after launch, what it costs, and what would trigger a rollback? | |
+| 11 | Name what would change your mind, and who does what next? | |
+| 12 | Keep simulated and illustrative evidence labeled as such, instead of presenting it as real results? | |
+
+**How did you do?** All three must-pass items and at least 6 of the rest: you can run an evaluation of a real model, not just read a score. Missed a must-pass item? Ask your agent to show you the evidence you skipped (`variance`, or `traces --trace T-203`), then write down what you'd look at first next time.
+
 ## Share your result (optional)
 
 The course author would love to know how it went. On the course's GitHub page, open a new issue and pick **My final challenge result**. Share your checklist and anything that was confusing. Leave out your name, email, and anything else personal.

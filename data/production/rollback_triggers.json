@@ -1,0 +1,20 @@
+{
+  "agreed_on": "2026-09-11",
+  "agreed_by": "Support lead, product manager, engineering lead, on-call owner (fictional roles)",
+  "note": "Illustrative triggers, agreed before the canary started. Each says what to measure, the line that trips it, and the action. Agree yours before you see results.",
+  "latency_budget_ms": 8000,
+  "triggers": [
+    {"id": "R1", "check": "specialist_routed", "deployments": ["canary"], "max_failures": 0,
+     "action": "Roll back the canary to the current version. Requests that needed a specialist didn't reach one."},
+    {"id": "R2", "check": "specialist_routed", "deployments": ["production"], "max_failures": 0,
+     "action": "Send that request type to people only, and investigate."},
+    {"id": "R3", "check": "right_ticket", "deployments": ["production", "canary"], "max_failures": 0,
+     "action": "Stop sending from merged tickets until the routing bug is fixed."},
+    {"id": "R4", "check": "judge_errors_not_counted_as_pass", "deployments": ["production", "canary"], "max_failures": 0,
+     "action": "Fix the evaluator, then have a person recheck every draft it waved through."},
+    {"id": "R5", "check": "draft_produced", "deployments": ["canary"], "min_rate": 0.97,
+     "action": "Hold the rollout: agents are getting no draft."},
+    {"id": "R6", "check": "right_policy", "deployments": ["production", "canary"], "max_failures": 0,
+     "action": "Freeze drafts on affected orders and fix the policy configuration."}
+  ]
+}

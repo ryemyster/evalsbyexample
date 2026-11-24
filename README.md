@@ -14,13 +14,15 @@ Everything here is fictional: the store, customers, orders, policies, reviewers,
 - **No installs, no API key.** Python 3.9 or newer (the version built into macOS works) and the standard library.
 - **26 cases** across 7 categories, in an editable JSONL format ([field reference](docs/case-format.md)).
 - **3 candidates:** a template baseline, a flawed `candidate-v1`, and an improved `candidate-v2`. A fourth, `candidate-v4`, is the final challenge.
-- **9 exercises** with tests and reference solutions.
+- **17 exercises** with tests and reference solutions: 9 in Part 1, 8 in Part 2.
 - **Check yourself:** break the AI on purpose, then a final challenge where you make the call alone and score yourself ([checklist](docs/check-yourself.md)).
 - **A playground** for your own cases, checks, gates, and candidates, with `EXTEND HERE` markers in the code ([extending.md](docs/extending.md)).
 - **Bring your own model (optional):** Claude, OpenAI, Gemini, DeepSeek, Kimi, Ollama, or any OpenAI-compatible endpoint, graded by the same cases and gates.
 - **Start over any time:** `clean` and `reset` put things back, and back up your work first.
 - **No coding needed** if you use a coding agent as your tutor: see [START_HERE.md](START_HERE.md).
+- **Part 2: beyond pass/fail.** Models that answer differently each time, rubrics people agree on, a second AI that grades the first (and how it gets fooled), the cost of checking, and what happens after launch. Still offline and free: the models and judges are SIMULATED. [See below](#part-2-beyond-passfail).
 - For PMs: [who owns what, what evidence a launch needs, and how to compare models](docs/pm-guide.md).
+- Learning paths for beginners, PMs, engineers, and advanced practitioners: [docs/learning-paths.md](docs/learning-paths.md).
 
 ## Two ways to start
 
@@ -355,6 +357,61 @@ The rude version passes every test, because no check looks at tone. Tests only c
 
 **The final challenge.** candidate-v4 answers more requests itself so customers wait less, and it looks great at first. Should it go out? Test it however you like, make your call, then score yourself with the checklist in [docs/check-yourself.md](docs/check-yourself.md). (Try it before reading `returns_eval/candidates/candidate_v4.py`, which gives the answer away.)
 
+## Part 2: beyond pass/fail
+
+Part 1 tests scripts that give the same answer every time, with checks written in code. Real models don't behave like that, and some things (like tone) are too fuzzy for code. Part 2 covers what changes. It's still offline and free: `sim-model-a`, `-b`, `-c`, and `candidate-v5` are **SIMULATED** models (scripts with built-in randomness), `judge-a` and `judge-b` are **SIMULATED** judges with known flaws, and the labels, traces, and prices are **ILLUSTRATIVE**. The numbers are real computations on made-up inputs. With a coding agent, say "let's do Part 2" ([TUTOR-PART2.md](TUTOR-PART2.md)).
+
+| Module | The question | Commands | Exercise |
+|---|---|---|---|
+| 1. Models that vary | Is a better score real, or luck? | `variance`, `run --repeat`, `run --seed` | 10 |
+| 2. Rubrics and people | Would two people grade this the same way? | `rubric-check`, `labels`, `review-summary` | 11, 12 |
+| 3. Automated judges | Can a second AI grade the first, and how is it fooled? | `judge`, `bias-check` | 13 |
+| 4. Judge calibration | What does the judge catch, miss, and flag wrongly? | `calibrate` | 14 |
+| 5. Cost of checking | Where should people, a judge, and code each look? | `budget` | 15 |
+| 6. After launch | Which layer failed, and do we roll back? | `traces` | 16 |
+| Capstone | Ship, hold, or roll back candidate-v5? | all of the above | 17 |
+
+**One run is one roll of the dice.** One run each says a new prompt (`sim-model-b`) beats the old one by two cases. Ten runs each:
+
+```bash
+python3 -m returns_eval variance sim-model-a sim-model-b sim-model-c --runs 10
+```
+
+```
+                                       sim-model-a       sim-model-b       sim-model-c
+  run 1 (seed 1)                           22 / 26           24 / 26           24 / 26
+  ...
+  lowest to highest                       21 to 26          21 to 24          21 to 25
+  average                          22.4 / 26 (86%)   22.8 / 26 (88%)   24.0 / 26 (92%)
+...
+sim-model-b compared with sim-model-a (paired: the same cases, run for run)
+  average difference: +0.4 cases per run
+  95% range for the real difference: -0.8 to +1.5 cases per run
+  -> The range includes 0, so these 10 runs can't tell sim-model-b from sim-model-a. ...
+...
+sim-model-c compared with sim-model-a (paired: the same cases, run for run)
+  average difference: +1.6 cases per run
+  95% range for the real difference: +0.2 to +3.0 cases per run
+```
+
+**The same agreement can hide opposite mistakes.** Two judges are checked against people's labels on 30 held-out drafts:
+
+```bash
+python3 -m returns_eval calibrate judge-a judge-b --split holdout
+```
+
+```
+                                                 judge-a             judge-b
+agreed with people                         24 / 30 (80%)       24 / 30 (80%)
+...
+problems caught (recall)                     3 / 9 (33%)         8 / 9 (89%)
+...
+missed problems (false acceptance)                     6                   1
+false alarms (false rejection)                         0                   5
+```
+
+Which one to use depends on which mistake costs more where you use it. There's no universal "good enough" number. Each technique's card (what it measures, what it can't, when to use it, how it changes decisions) is in [docs/techniques.md](docs/techniques.md), and the research behind Part 2, with what's settled and what's disputed, is in [docs/sources.md](docs/sources.md).
+
 ## Make it your own
 
 The tutorial walks you through one eval. To try your own ideas, start in `playground/`:
@@ -366,6 +423,7 @@ The tutorial walks you through one eval. To try your own ideas, start in `playgr
 | A different way to write drafts | `playground/my_candidate.py`. It passes all 26 original cases but has a bug no check catches; finding it is the first lesson. |
 | A new check, gate, review question, or tool | The `EXTEND HERE` comments in `returns_eval/` (`grep -rn "EXTEND HERE" returns_eval`) |
 | A real model | `playground/my_model.py` (see below) |
+| A real judge | `playground/my_judge.py` ([add a judge](docs/extending.md#add-a-judge)) |
 
 [docs/extending.md](docs/extending.md) has a worked recipe for each, including adding the check that catches the playground candidate's bug.
 
@@ -410,7 +468,7 @@ Unfinished exercises fail with a message saying what's left to do. Details: [exe
 | `python3 -m returns_eval cases [--category C]` | List cases |
 | `python3 -m returns_eval show-case RC-001` | Show one case's input, records, and expected behavior |
 | `python3 -m returns_eval candidates` | List candidates |
-| `python3 -m returns_eval run --candidate NAME [--baseline NAME] [--review CSV...] [--repeat N] [--only ID...]` | Run, grade, save to `runs/`, print the report and gate decision |
+| `python3 -m returns_eval run --candidate NAME [--baseline NAME] [--review CSV...] [--repeat N] [--seed S] [--only ID...]` | Run, grade, save to `runs/`, print the report and gate decision |
 | `python3 -m returns_eval report RUN [--case ID]` | Re-print a saved run, or one case with draft, trace, and every check |
 | `python3 -m returns_eval compare BASELINE CANDIDATE [...]` | Same cases, side by side, by category and failure type, with gates |
 | `python3 -m returns_eval gate RUN [--baseline ...] [--review ...]` | Apply the gates; exit code 0 only if ready for a pilot |
@@ -420,6 +478,14 @@ Unfinished exercises fail with a message saying what's left to do. Details: [exe
 | `python3 -m returns_eval clean [--reviews]` | Delete saved runs (and, with `--reviews`, filled-in review sheets) |
 | `python3 -m returns_eval reset [--cases] [--exercises N...] [--playground] [--code] [--runs] [--all]` | List changes, or put parts back to the start (backs up first) |
 | `python3 -m returns_eval pilot` | Summarize the illustrative pilot data |
+| `python3 -m returns_eval variance CANDIDATE [...] [--runs N] [--seed S]` | Run candidates several times on the same cases; is a difference real, or luck? |
+| `python3 -m returns_eval rubric-check FILE` | Check that a rubric's criteria say what a rater should look for |
+| `python3 -m returns_eval labels` | Show the human-labeled drafts: splits, agreement beyond chance, leakage checks |
+| `python3 -m returns_eval judge JUDGE --run RUN [--criterion C] [--versus RUN] [--prompt FILE]` | Have an automated judge grade a run's drafts, or compare two runs pairwise in both orders |
+| `python3 -m returns_eval bias-check JUDGE [--prompt FILE]` | Probe a judge for position, length, self-preference, wording, injection, repeat, and format problems |
+| `python3 -m returns_eval calibrate JUDGE [...] [--split S] [--prompt FILE]` | Compare judges with people's labels: caught, missed, false alarms, by segment and confidence |
+| `python3 -m returns_eval budget PLAN` | Weekly cost of a checking plan, and how many problems still get through |
+| `python3 -m returns_eval traces [--deployment D] [--trace ID]` | Check ILLUSTRATIVE production traces step by step, and apply rollback triggers |
 
 `RUN` can be a file path, `latest`, or `latest:<candidate>`, e.g. `latest:candidate-v1`.
 
@@ -428,8 +494,11 @@ Unfinished exercises fail with a message saying what's left to do. Details: [exe
 ```
 returns_eval/            the eval harness (standard library only)
   candidates/            what produces drafts: baseline, candidate_v1 (flawed), candidate_v2 (reference),
-                         candidate_v4 (the final challenge), llm_adapter (optional, unused by default)
-  grading/               what judges drafts: checks.py, facts.py, text.py, grader.py
+                         candidate_v4 (the final challenge), simulated (Part 2's SIMULATED models and
+                         candidate-v5), llm_adapter (optional, unused by default)
+  grading/               what checks drafts: checks.py, facts.py, text.py, output_format.py, grader.py
+  judging/               automated judges (Part 2): base, simulated judges, bias probes, calibration
+  stats.py variance.py rubric.py labels.py economics.py production.py   Part 2 tools
   tools.py               sandboxed toolbox; records every call in a trace
   harness.py             runs a candidate, records the trace, hands output to the grader
   gates.py report.py human_review.py pilot.py cli.py
@@ -439,12 +508,18 @@ data/
   gates.json             release gates, agreed before results
   human_review/          two ILLUSTRATIVE reviewer scorecards
   pilot/                 ILLUSTRATIVE pilot tickets and one incident
+  rubrics/               the team's first rubric and the clear one (Part 2)
+  labels/                ILLUSTRATIVE human labels for tone, split into train, calibration, holdout
+  judges/                judge prompt templates, versioned
+  economics/             ILLUSTRATIVE volumes, costs, and made-up prices
+  production/            ILLUSTRATIVE production and canary traces, rollback triggers
 START_HERE.md            no-code start: download, open in a coding agent, say hi
 AGENTS.md, CLAUDE.md     loaded automatically by coding agents; they point the agent to TUTOR.md
 TUTOR.md                 instructions your coding agent follows to teach the course
-playground/              yours to change: my_case.json, my_candidate.py, break_it.py, my_model.py (bring your own model)
-docs/                    case format, grading, extending, PM guide, model adapter
-exercises/               nine exercises and their tests
+TUTOR-PART2.md           the same, for Part 2
+playground/              yours to change: my_case.json, my_candidate.py, break_it.py, my_model.py and my_judge.py (bring your own)
+docs/                    case format, grading, techniques, sources, learning paths, extending, PM guide, model adapter
+exercises/               seventeen exercises and their tests
 solutions/               reference solutions
 tests/                   the repository's own tests
 runs/                    your saved runs (not committed)
@@ -464,7 +539,7 @@ Exercise tests (`python3 -m exercises all`) are separate and fail until you comp
 
 The model-comparison material (routing by request type, staged pilots, rollback thresholds, the one-page decision brief) is adapted from *A PM's Operating Guide to Comparing Models* by [Ascendvent](https://ascendvent.life), a practical AI advisory.
 
-The approach follows practices described in the evaluation guides published by OpenAI and Anthropic: criteria tied to the real task, representative and edge-case test sets, code-based and human grading, and checking any automated grader against human judgment. Those guides are updated over time, so read their current versions rather than relying on this summary.
+The approach follows practices described in the evaluation guides published by OpenAI and Anthropic: criteria tied to the real task, representative and edge-case test sets, code-based and human grading, and checking any automated grader against human judgment. Those guides are updated over time, so read their current versions rather than relying on this summary. Part 2's methods and their sources, including which are settled and which are disputed, are listed in [docs/sources.md](docs/sources.md).
 
 ## Need help, or want to learn more?
 

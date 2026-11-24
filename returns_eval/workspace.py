@@ -29,7 +29,8 @@ GROUPS = {
     "cases": ["data/cases"],
     "exercises": ["exercises"],
     "playground": ["playground"],
-    "code": ["returns_eval", "data/gates.json", "data/policies"],
+    "code": ["returns_eval", "data/gates.json", "data/policies", "data/rubrics", "data/judges", "data/labels",
+             "data/economics", "data/production"],
 }
 EXERCISE_TESTS = "exercises/tests"  # never touched; learners don't edit these
 
@@ -81,7 +82,7 @@ def exercise_paths(numbers: list[int]) -> list[str]:
     for n in numbers:
         found = sorted(p for p in (REPO_ROOT / "exercises").glob(f"ex{n:02d}_*") if p.is_file())
         if not found:
-            raise SystemExit(f"No exercise {n}. Exercises are numbered 1-9.")
+            raise SystemExit(f"No exercise {n}. Exercise files are exercises/ex01_* to the highest-numbered one.")
         paths += [str(p.relative_to(REPO_ROOT)) for p in found]
     return paths
 

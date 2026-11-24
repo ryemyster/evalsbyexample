@@ -44,7 +44,7 @@ class TestCandidates(unittest.TestCase):
         self.assertEqual(ids(run, lambda r: r["must_pass"] and not r["passed"]), [])
 
     def test_v4_includes_the_pilot_fix(self):
-        rc027 = json.loads((REPO_ROOT / "solutions" / "ex08_regression_case.jsonl").read_text().splitlines()[0])
+        rc027 = json.loads((REPO_ROOT / "solutions" / "ex08_regression_case.jsonl").read_text(encoding="utf-8").splitlines()[0])
         result = grade_case(rc027, [produce(load_candidate("candidate-v4"), rc027)])
         self.assertTrue(result["passed"], result["failed_checks"])
 

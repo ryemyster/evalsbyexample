@@ -10,7 +10,7 @@ class TestCaseSet(unittest.TestCase):
     def test_default_set_loads_and_validates(self):
         cs = load_case_set()
         self.assertGreaterEqual(len(cs.cases), 20)
-        self.assertEqual(cs.version, json.loads(MANIFEST.read_text())["version"])
+        self.assertEqual(cs.version, json.loads(MANIFEST.read_text(encoding="utf-8"))["version"])
 
     def test_every_category_is_covered(self):
         present = {c["category"] for c in CORE.cases}
@@ -41,9 +41,9 @@ class TestCaseSet(unittest.TestCase):
             edited = json.loads(json.dumps(CORE.cases[0]))
             edited["message"] += " Thanks!"
             path = Path(tmp) / "one.jsonl"
-            path.write_text(json.dumps(edited) + "\n")
+            path.write_text(json.dumps(edited) + "\n", encoding="utf-8")
             original = Path(tmp) / "orig.jsonl"
-            original.write_text(json.dumps(CORE.cases[0]) + "\n")
+            original.write_text(json.dumps(CORE.cases[0]) + "\n", encoding="utf-8")
             self.assertNotEqual(load_case_set([path]).sha256, load_case_set([original]).sha256)
 
 

@@ -19,6 +19,8 @@ from itertools import combinations
 from pathlib import Path
 from typing import Any
 
+from .stats import cohen_kappa
+
 # EXTEND HERE: add a scorecard criterion. Add a key with its allowed values (best first)
 # and a line in GUIDE, then document it in docs/grading.md. See docs/extending.md
 CRITERIA: dict[str, tuple[str, ...]] = {
@@ -116,6 +118,7 @@ class ReviewSummary:
     worst: dict[str, dict[str, str]] = field(default_factory=dict)  # case_id -> criterion -> worst rating
     counts: dict[str, dict[str, int]] = field(default_factory=dict)
     agreement: dict[tuple[str, str], dict[str, tuple[int, int]]] = field(default_factory=dict)
+    kappa: dict[tuple[str, str], dict[str, float | None]] = field(default_factory=dict)  # agreement beyond chance
     disagreements: list[str] = field(default_factory=list)
     reviewers: list[str] = field(default_factory=list)
     illustrative: bool = False
@@ -149,6 +152,11 @@ def summarize(run: dict[str, Any], rows: list[dict[str, str]]) -> ReviewSummary:
     for a, b in combinations(summary.reviewers, 2):
         summary.agreement[(a, b)] = {c: percent_agreement(by_reviewer[a], by_reviewer[b], c) for c in CRITERIA}
         b_rows = {r["case_id"]: r for r in by_reviewer[b]}
+        summary.kappa[(a, b)] = {}
+        for c in CRITERIA:
+            pairs = [(row[c], b_rows[row["case_id"]][c]) for row in by_reviewer[a]
+                     if row["case_id"] in b_rows and row.get(c) is not None and b_rows[row["case_id"]].get(c) is not None]
+            summary.kappa[(a, b)][c] = cohen_kappa([x for x, _ in pairs], [y for _, y in pairs]) if pairs else None
         for row in by_reviewer[a]:
             other = b_rows.get(row["case_id"])
             if other is None:

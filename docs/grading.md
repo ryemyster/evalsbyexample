@@ -23,9 +23,10 @@ Severity belongs to the check, not the case, so this table is the whole rulebook
 | `forbidden_content` | major | Does the reply avoid things it must never say (`must_not_mention`)? | The case. |
 | `length` | minor | Is the reply a sensible length (40 to 1,200 characters)? | The reply. |
 | `candidate_error` | major | Did it crash instead of writing a draft? | The harness. |
+| `structured_output` | major | Did a model's raw reply follow the agreed format? Only for model-backed candidates. | The raw text, re-checked by the grader's own parser, not the adapter's cleanup (an invalid `resolution` that the adapter turned into `escalate` still fails here). |
 
 - A **case passes** if no critical or major check fails. Minor failures are reported but don't fail the case.
-- With `--repeat N`, a case passes only if **every** attempt passes. Use this for anything that can answer differently each time, such as a language model.
+- With `--repeat N`, a case passes only if **every** attempt passes. Use this for anything that can answer differently each time, such as a language model. To compare versions that vary, use `variance` (Part 2, [techniques.md](techniques.md#repeated-runs-and-statistics)).
 - Bump `GRADER_VERSION` in `returns_eval/grading/grader.py` when check logic changes. Runs record it, and `compare` refuses to compare runs graded by different versions.
 
 ### What these checks can't do
@@ -43,6 +44,7 @@ Reports also show measures that aren't pass/fail checks, each as numerator / den
 | Escalation recall | Cases escalated / cases where escalating is the only acceptable outcome | Always |
 | Reliability | Cases with the same disposition and verdict on every attempt / cases | `--repeat` 2 or more |
 | p95 draft time | 95th-percentile seconds to produce one draft | Drafts take 0.1 s or longer (real models) |
+| Tokens, time, and cost | Average tokens per draft, median and p95 time, and estimated cost from a prices file | The candidate reports usage (model-backed candidates; SIMULATED ones say so) |
 
 ## Human review scorecard
 
@@ -67,7 +69,21 @@ Rules the tooling enforces:
 - **Stale reviews don't count.** Each row stores the draft's fingerprint. If the candidate changes and the draft changes, that row is marked stale and the draft needs a new review.
 - **Disagreement is shown, not averaged.** When two reviewers differ, the worse rating counts toward the gate, and every disagreement is listed so the team can tighten the rubric or fix the case.
 
-Before you use a model to grade at scale, compare its ratings with human ratings on the same drafts, the same way `review-summary` compares two reviewers. Investigate disagreements before trusting its totals.
+`review-summary` also shows **kappa** for each pair of reviewers: agreement beyond what chance alone would give. When nearly every draft gets the same rating, two reviewers agree often by chance, so a high percentage can hide a kappa near 0. In the illustrative scorecards, the reviewers gave the same tone rating to 25 of 26 drafts, and kappa is 0.00: they disagreed on the only draft where tone was in question.
+
+## Automated judges (Part 2)
+
+Some criteria, like tone, are too fuzzy for a regular expression and too many for people to check on every draft. An **automated judge** (a model grading against a written criterion) can help, if it's checked against people first. Part 2 of the course builds this up step by step:
+
+| Step | Command | What it shows |
+|---|---|---|
+| Write criteria a rater can apply | `rubric-check FILE` | Whether each criterion says what to look for, what each value means, and who grades it |
+| Check the people agree | `labels` | Splits, agreement beyond chance (kappa), leakage between splits |
+| Run a judge | `judge JUDGE --run RUN` | Its verdicts on a run's drafts; `--versus RUN` compares two runs pairwise, both orders |
+| Probe it for bias | `bias-check JUDGE` | Position, length, self-preference, wording, injection, repeat, and format probes |
+| Measure it against people | `calibrate JUDGE... --split S` | What it catches, misses, and flags wrongly, by segment and by its own confidence |
+
+Rules the tooling enforces: an answer the judge can't read is an **error**, never a pass; pairwise wins count only when both orders agree; probes never touch the holdout split. What each technique can and can't tell you: [techniques.md](techniques.md).
 
 ## Release gates
 

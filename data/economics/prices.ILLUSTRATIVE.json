@@ -1,0 +1,10 @@
+{
+  "illustrative": true,
+  "note": "Made-up prices for the SIMULATED models and judges, so cost math can be practised offline. They are not any provider's prices. For a real model, copy this file, put in your provider's current published prices, and set EVALS_PRICES to your copy.",
+  "currency": "USD",
+  "per_million_tokens": {
+    "sim-large": {"input": 3.0, "output": 15.0},
+    "sim-small": {"input": 0.8, "output": 4.0},
+    "sim-judge": {"input": 0.5, "output": 2.0}
+  }
+}

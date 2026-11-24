@@ -28,6 +28,15 @@ TITLES = {
     7: "Read pilot outcomes, not just offline scores",
     8: "Turn a pilot incident into a regression case",
     9: "Fix the candidate and rerun everything",
+    # Part 2 (TUTOR-PART2.md)
+    10: "Luck or a real improvement? Read repeated runs",
+    11: "Fix a vague rubric",
+    12: "Agreement beyond chance",
+    13: "Diagnose a judge and fix its prompt",
+    14: "Is this judge fit for the job?",
+    15: "Spend an evaluation budget",
+    16: "Which layer failed? Attribute production failures",
+    17: "Capstone: ship, hold, or roll back candidate-v5",
 }
 
 
@@ -41,14 +50,14 @@ def check(n: int) -> tuple[int, int]:
 
 def main() -> int:
     parser = argparse.ArgumentParser(prog="python3 -m exercises", description="Run exercise tests.")
-    parser.add_argument("which", help="exercise number (1-9) or 'all'")
+    parser.add_argument("which", help=f"exercise number (1-{max(TITLES)}) or 'all'")
     parser.add_argument("--solution", action="store_true", help="test the reference solutions instead")
     args = parser.parse_args()
     if args.solution:
         os.environ["EVALS_USE_SOLUTIONS"] = "1"
     numbers = sorted(TITLES) if args.which == "all" else [int(args.which)]
     if any(n not in TITLES for n in numbers):
-        parser.error("exercise must be 1-9 or 'all'")
+        parser.error(f"exercise must be 1-{max(TITLES)} or 'all'")
 
     sys.path.insert(0, str(HERE.parent))
     loader = unittest.TestLoader()

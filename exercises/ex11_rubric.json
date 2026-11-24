@@ -1,0 +1,32 @@
+{
+  "rubric": "draft-quality",
+  "version": "0.1",
+  "note": "Exercise 11: the team's first rubric. Make every criterion say what a rater would see in the reply. Check it with: python3 -m returns_eval rubric-check exercises/ex11_rubric.json  then  python3 -m exercises 11",
+  "criteria": [
+    {
+      "id": "helpful",
+      "question": "Is the reply helpful?",
+      "scale": "1-5"
+    },
+    {
+      "id": "tone",
+      "question": "Is the tone good and professional?",
+      "scale": "binary",
+      "values": [
+        "ok",
+        "problem"
+      ]
+    },
+    {
+      "id": "accurate",
+      "question": "Is it accurate?",
+      "scale": "binary"
+    },
+    {
+      "id": "complete",
+      "question": "Is the reply complete and appropriate?",
+      "scale": "binary",
+      "graded_by": "judge"
+    }
+  ]
+}

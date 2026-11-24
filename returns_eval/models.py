@@ -59,6 +59,9 @@ class Draft:
     resolution: str
     order_id: str | None = None
     note_for_agent: str = ""  # internal note; never shown to the customer
+    # The model's raw text, for model-backed candidates. The grader re-checks it with its own
+    # code (the structured_output check) instead of trusting the adapter's cleanup. None for scripts.
+    raw_output: str | None = None
 
     def fingerprint(self) -> str:
         """Short hash used to tell whether a human review still matches this draft."""

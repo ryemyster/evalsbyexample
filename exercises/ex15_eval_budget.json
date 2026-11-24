@@ -1,0 +1,16 @@
+{
+  "plan": "TODO: name your plan in a few words",
+  "about": "Exercise 15. Today people check every draft's tone. That costs more than the weekly budget. Design a plan that stays within budget and lets no more than the team's limit of problems through. Check it with: python3 -m returns_eval budget exercises/ex15_eval_budget.json",
+  "code_checks_share": 1.0,
+  "judge": null,
+  "measured_on": "holdout",
+  "judge_share": {},
+  "people_check_flags": true,
+  "people_check_unsure_below": null,
+  "people_random_share": {"accept_return": 1.0, "inform": 1.0, "decline_return": 1.0, "escalate": 1.0, "ask_customer": 1.0},
+  "relabel_drafts_per_month": 0,
+  "evidence": [
+    {"claim": "TODO: a measured fact your plan relies on", "command": "TODO: the course command that shows it"}
+  ],
+  "why": "TODO: in a few sentences, why this plan, pointing at numbers you saw"
+}

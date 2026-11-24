@@ -70,6 +70,7 @@ Explain what happened, then wait for me before moving on.
 - **It's split into lessons.** The first three give you the main idea in about 15 minutes. Then you get to break the AI on purpose and see if the tests notice, and that's a fine place to stop. The later lessons are more like detective work, comparing results to find what an average hides.
 - **You guess before you see.** Before each result, your agent asks what you think will happen. Wrong guesses are the point: that's when it clicks.
 - **It ends with a challenge.** A new version of the AI looks great, and you decide on your own whether it should go out. Then you score yourself with [a short checklist](docs/check-yourself.md).
+- **There's a Part 2 when you're ready.** It covers testing real AI models, whose answers change each time, and using a second AI to mark the first one's work. It's still free and offline. Say "let's do Part 2".
 - **You can't break anything permanently.** The agent can put any file back the way it started, and it saves a copy of your version first.
 
 ## If you'd rather do it yourself

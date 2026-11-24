@@ -81,7 +81,11 @@ class LLMCandidate(Candidate):
         )
 
     def draft_reply(self, request: Request, tools: Toolbox) -> Draft:
-        raw = self.complete(self.build_prompt(request, tools))
+        return self.draft_from_raw(self.complete(self.build_prompt(request, tools)), tools)
+
+    def draft_from_raw(self, raw: str, tools: Toolbox) -> Draft:
+        """Turn the model's raw text into a Draft. The raw text is kept on the draft, so the
+        grader can check the model's actual output, not this method's cleaned-up version."""
         data = parse_model_json(raw)
         # Route any tool calls the model asked for through the toolbox, so the
         # trace records them. A forbidden call then fails the action_boundary check.
@@ -96,6 +100,7 @@ class LLMCandidate(Candidate):
             resolution=resolution,
             order_id=data.get("order_id") or None,
             note_for_agent=str(data.get("note_for_agent", "")),
+            raw_output=raw,
         )
 
 

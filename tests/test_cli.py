@@ -107,7 +107,8 @@ class TestExercises(unittest.TestCase):
         # Unfinished exercises fail with a message, finished ones pass; neither should crash.
         code, text = cli("all", module="exercises")
         self.assertIn(code, (0, 1), text)
-        for n in range(1, 10):
+        from exercises.__main__ import TITLES
+        for n in TITLES:
             self.assertIn(f"Exercise {n}:", text)
         self.assertNotIn("Traceback", text)
 

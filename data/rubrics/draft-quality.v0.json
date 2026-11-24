@@ -1,0 +1,11 @@
+{
+  "rubric": "draft-quality",
+  "version": "0.1",
+  "note": "The first draft of the team's rubric. The two annotators used it for the first round of tone labels (data/labels/). It fails python3 -m returns_eval rubric-check, and Exercise 11 asks you to fix it.",
+  "criteria": [
+    {"id": "helpful", "question": "Is the reply helpful?", "scale": "1-5"},
+    {"id": "tone", "question": "Is the tone good and professional?", "scale": "binary", "values": ["ok", "problem"]},
+    {"id": "accurate", "question": "Is it accurate?", "scale": "binary"},
+    {"id": "complete", "question": "Is the reply complete and appropriate?", "scale": "binary", "graded_by": "judge"}
+  ]
+}
