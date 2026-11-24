@@ -20,7 +20,7 @@ from returns_eval.cases import REPO_ROOT, validate_case
 from returns_eval.grading import grade_case
 from returns_eval.harness import produce
 
-from .helpers import CASES
+from .helpers import CASES, model_env
 
 GOOD = {"resolution": "inform", "order_id": "EO-10417",
         "reply_text": "Hi Ana, we received your return on August 7, and it's waiting for inspection."}
@@ -99,7 +99,7 @@ class TestOpenAICompatible(unittest.TestCase):
         for cls, provider in ((OpenAIModel, "openai"), (GeminiModel, "gemini"), (DeepSeekModel, "deepseek"),
                               (KimiModel, "kimi"), (OllamaModel, "ollama")):
             key_env = PROVIDERS[provider]["key_env"]
-            with mock.patch.dict(os.environ, {"EVALS_MODEL": "m", key_env: "secret"}, clear=True):
+            with model_env({"EVALS_MODEL": "m", key_env: "secret"}):
                 model = cls()
             self.assertEqual((model.name, model.version), (provider, "m"))
             self.assertEqual(model.base_url, PROVIDERS[provider]["base_url"].rstrip("/"))
@@ -107,18 +107,18 @@ class TestOpenAICompatible(unittest.TestCase):
             self.assertTrue(model.base_url.startswith(("https://", "http://localhost")))
 
     def test_preset_without_key_explains_which_variable(self):
-        with mock.patch.dict(os.environ, {"EVALS_MODEL": "m"}, clear=True):
+        with model_env({"EVALS_MODEL": "m"}):
             attempt = produce(DeepSeekModel(), CASES["RC-001"])
         self.assertIn("DEEPSEEK_API_KEY", attempt["error"])
 
     def test_local_ollama_needs_no_key(self):
-        with mock.patch.dict(os.environ, {"EVALS_MODEL": "m", "EVALS_BASE_URL": self._serve()}, clear=True):
+        with model_env({"EVALS_MODEL": "m", "EVALS_BASE_URL": self._serve()}):
             result = graded(OllamaModel(), "RC-001")
         self.assertNotIn("Authorization", _Handler.seen[-1][1])
         self.assertTrue(result["passed"], result["failed_checks"])
 
     def test_missing_model_name_is_explained(self):
-        with mock.patch.dict(os.environ, {"OPENAI_API_KEY": "k"}, clear=True):
+        with model_env({"OPENAI_API_KEY": "k"}):
             attempt = produce(OpenAIModel(), CASES["RC-001"])
         self.assertIn("Set EVALS_MODEL", attempt["error"])
 
@@ -149,7 +149,7 @@ class TestClaudeModel(unittest.TestCase):
 
     def test_request_shape_and_text_extraction(self):
         fake = _FakeAnthropic()
-        with mock.patch.dict(os.environ, {}, clear=True):
+        with model_env({}):
             result = graded(self._model(fake), "RC-001")
         call = fake.calls[0]
         self.assertEqual(call["model"], "claude-opus-5-5")

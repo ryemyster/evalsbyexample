@@ -20,6 +20,7 @@ from returns_eval.cases import REPO_ROOT, load_case_set
 from returns_eval.judging import LLMJudge, load_judge, prompt_problems, with_case_context
 from returns_eval.judging.base import parse_verdict
 from returns_eval.judging.calibration import judge_items, summarize
+from .helpers import model_env
 from returns_eval.judging.probes import INJECT, _flips, run_probes
 
 CASES = {c["id"]: c for c in load_case_set().cases}
@@ -144,7 +145,7 @@ class TestLiveAdaptersOffline(unittest.TestCase):
 
         _Handler.reply = {"verdict": "problem", "reason": "It says 'honestly'.", "confidence": 0.9}
         env = {"EVALS_JUDGE_MODEL": "judge-model", "EVALS_BASE_URL": self.url, "EVALS_API_KEY": "k"}
-        with mock.patch.dict(os.environ, env, clear=True):
+        with model_env(env):
             judge = OpenAICompatibleJudge()
             verdict = judge.pointwise(TUNE[1])
         self.assertEqual((verdict["verdict"], judge.version), ("problem", "judge-model"))
@@ -156,7 +157,7 @@ class TestLiveAdaptersOffline(unittest.TestCase):
 
         _Handler.reply = {"resolution": "inform", "order_id": "EO-10417",
                           "reply_text": "Hi Ana, we received your return on August 7, and it's waiting for inspection."}
-        with mock.patch.dict(os.environ, {"EVALS_MODEL": "m", "EVALS_BASE_URL": self.url, "EVALS_API_KEY": "k"}, clear=True):
+        with model_env({"EVALS_MODEL": "m", "EVALS_BASE_URL": self.url, "EVALS_API_KEY": "k"}):
             attempt = produce(OpenAICompatibleModel(), CASES["RC-001"])
         self.assertEqual((attempt["usage"]["input_tokens"], attempt["usage"]["source"]), (321, "provider"))
 
