@@ -1,6 +1,6 @@
 [project]
 name = "evalsbyexample"
-version = "1.1.0"
+version = "2.0.0"
 description = "A hands-on, offline tutorial that teaches product managers to define and use evals, using an AI assistant that drafts replies to return requests."
 readme = "README.md"
 requires-python = ">=3.9"
