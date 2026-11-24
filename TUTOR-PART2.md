@@ -10,6 +10,7 @@ Read this file in full when the learner starts Part 2. Everything in [TUTOR.md](
 - **Say what's simulated, every time it matters.** The models in Part 2 (`sim-model-a`, `-b`, `-c`, `candidate-v5`) and the judges (`judge-a`, `judge-b`) are **SIMULATED**: scripts with built-in randomness or known flaws. The labels, traces, prices, and volumes are **ILLUSTRATIVE**. The numbers are real computations on made-up inputs. They teach how to read evidence, not how any real model behaves.
 - **Match the framing.** For a student, a "judge" is "a second AI that marks the first AI's work, like a teaching assistant marking homework". A "canary" is "trying the new version on a few customers first".
 - **Same numbers as this file.** The numbers quoted here come from the 26 core cases. If the learner added RC-027 in Lesson 7, add `--cases data/cases/core.jsonl` to `run` and `variance` in Lessons 10 and 12 so what they see matches. (The capstone includes RC-027 on purpose.)
+- **Windows.** Use the same `PY` as in Part 1 (usually `py`). Wildcards like `data/human_review/*.csv` work in PowerShell too, because the course expands them itself. To set a variable for a live judge, use `$env:NAME="value"` instead of `export`.
 - **Pace.** Part 2 is denser. Offer a break after every lesson. Each lesson stands alone; the learner can stop after any of them with the takeaway in their notes.
 
 | Lesson | Module | Big idea | Exercise |

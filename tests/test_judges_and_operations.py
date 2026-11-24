@@ -56,7 +56,7 @@ class TestRubricAndLabels(unittest.TestCase):
         holdout = next(i for i in labels.load_items() if i["split"] == "holdout")
         with tempfile.TemporaryDirectory() as tmp:
             prompt = Path(tmp) / "leaky.txt"
-            prompt.write_text("Example of a bad reply: " + holdout["reply_text"])
+            prompt.write_text("Example of a bad reply: " + holdout["reply_text"], encoding="utf-8")
             leaks = labels.prompt_contamination(labels.load_items(), [prompt])
         self.assertIn((holdout["item_id"], "leaky.txt"), leaks)
         self.assertEqual(labels.prompt_contamination(labels.load_items(), sorted((REPO_ROOT / "data/judges").glob("*.txt"))), [])
@@ -78,9 +78,9 @@ class TestJudges(unittest.TestCase):
         self.assertEqual((s["errors"], s["agree"], s["cm"]["tn"]), (30, 0, 0))
 
     def test_prompt_rules(self):
-        self.assertEqual(prompt_problems((REPO_ROOT / "data/judges/tone.v1.txt").read_text()), [])
-        self.assertEqual(prompt_problems((REPO_ROOT / "data/judges/pairwise-tone.v1.txt").read_text(), "pairwise"), [])
-        self.assertEqual(len(prompt_problems((REPO_ROOT / "exercises/ex13_judge_prompt.txt").read_text())), 6)
+        self.assertEqual(prompt_problems((REPO_ROOT / "data/judges/tone.v1.txt").read_text(encoding="utf-8")), [])
+        self.assertEqual(prompt_problems((REPO_ROOT / "data/judges/pairwise-tone.v1.txt").read_text(encoding="utf-8"), "pairwise"), [])
+        self.assertEqual(len(prompt_problems((REPO_ROOT / "exercises/ex13_judge_prompt.txt").read_text(encoding="utf-8"))), 6)
 
     def test_same_agreement_different_failures_on_holdout(self):
         a = summarize(HOLDOUT, judge_items(load_judge("judge-a"), HOLDOUT))
@@ -103,7 +103,7 @@ class TestJudges(unittest.TestCase):
         self.assertEqual(probes("judge-a", str(REPO_ROOT / "exercises/ex13_judge_prompt.txt"))["format"], len(TUNE))
         with tempfile.TemporaryDirectory() as tmp:
             unfenced = Path(tmp) / "unfenced.txt"
-            unfenced.write_text('{criterion}\nReply: {reply}\nJSON: {"verdict": "ok" or "problem", "confidence": 0.5}')
+            unfenced.write_text('{criterion}\nReply: {reply}\nJSON: {"verdict": "ok" or "problem", "confidence": 0.5}', encoding="utf-8")
             flipped, of = _flips(lambda: load_judge("judge-a", str(unfenced)), TUNE, INJECT)
         self.assertEqual(len(flipped), of)
 
@@ -169,7 +169,7 @@ class TestEconomics(unittest.TestCase):
         nobody = economics.evaluate({"judge": None}, costs, None, None)
         self.assertEqual((round(everyone["eval_usd"], 2), round(everyone["totals"]["missed"], 1)), (750.0, 0.0))
         self.assertEqual(round(nobody["totals"]["missed"], 1), 46.6)
-        plan = json.loads((REPO_ROOT / "solutions/ex15_eval_budget.json").read_text())
+        plan = json.loads((REPO_ROOT / "solutions/ex15_eval_budget.json").read_text(encoding="utf-8"))
         rates, usage = economics.judge_rates(plan["judge"], plan["measured_on"], CASES, plan["people_check_unsure_below"])
         result = economics.evaluate(plan, costs, rates, usage)
         self.assertLessEqual(result["eval_usd"], costs["weekly_budget_usd"])

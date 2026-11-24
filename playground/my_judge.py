@@ -5,6 +5,7 @@ connections in playground/my_model.py (same base URLs and key variables) but sen
 the judge prompt instead, with their own model setting:
 
     export EVALS_JUDGE_MODEL=<a model name from your provider's docs>
+    (Windows PowerShell: $env:EVALS_JUDGE_MODEL="..."; on Windows, use py in place of python3)
     python3 -m returns_eval calibrate playground.my_judge:OpenAIJudge --split calibration
     python3 -m returns_eval bias-check playground.my_judge:OpenAIJudge
 

@@ -6,22 +6,46 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
-      fail-fast: false  # one version's problem shouldn't hide the others' results
+      fail-fast: false  # one platform's problem shouldn't hide the others' results
       matrix:
-        python-version: ["3.11", "3.13"]
+        include:
+          - {os: ubuntu-latest, python-version: "3.11"}
+          - {os: ubuntu-latest, python-version: "3.13"}
+          # Windows learners: TUTOR.md installs 3.13 with winget; older machines may have 3.9.
+          - {os: windows-latest, python-version: "3.9"}
+          - {os: windows-latest, python-version: "3.13"}
+    defaults:
+      run:
+        shell: bash  # Git Bash on Windows, so the same steps run everywhere
+    env:
+      PYTHON: python  # setup-python provides "python" on every platform; Windows has no "python3"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
       - name: Repository tests
-        run: python3 -m unittest discover -s tests -t . -v
+        run: python -m unittest discover -s tests -t . -v
       - name: Reference solutions pass the exercise tests
-        run: python3 -m exercises all --solution
+        run: python -m exercises all --solution
       - name: README commands run
         run: bash scripts/verify_readme_commands.sh
+      - name: Typed the way a Windows learner would, in PowerShell
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python -m returns_eval start --no-save
+          python -m returns_eval run --candidate candidate-v2 | Out-Null
+          # PowerShell doesn't expand *.csv; the course expands it itself.
+          $out = python -m returns_eval review-summary latest:candidate-v2 data/human_review/*.csv | Out-String
+          if ($out -notmatch "usability\s+23 / 26") { Write-Output $out; exit 1 }
+          $out = python -m returns_eval calibrate judge-a judge-b --split holdout | Out-String
+          if ($out -notmatch "24 / 30 \(80%\)") { Write-Output $out; exit 1 }
+          $out = python -m returns_eval traces --trace T-203 | Out-String
+          if ($out -notmatch "FAIL specialist_routed") { Write-Output $out; exit 1 }
+          Write-Output "PowerShell commands behaved as documented."
 
   # Python 3.9 is the version built into macOS, so the course must keep working on it.
   # setup-python has no 3.9 build for the current ubuntu-latest image, so this job runs

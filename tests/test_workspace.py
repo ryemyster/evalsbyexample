@@ -38,33 +38,33 @@ class TestReset(unittest.TestCase):
 
     def test_report_then_reset_restores_and_backs_up(self):
         ex = self.root / "exercises" / "ex03_refund_timing_check.py"
-        original = ex.read_text()
-        ex.write_text(original + "\n# my attempt\n")
-        (self.root / "playground" / "idea.py").write_text("x = 1\n")
+        original = ex.read_text(encoding="utf-8")
+        ex.write_text(original + "\n# my attempt\n", encoding="utf-8")
+        (self.root / "playground" / "idea.py").write_text("x = 1\n", encoding="utf-8")
         regressions = self.root / "data" / "cases" / "regressions.jsonl"
-        regressions.write_text(regressions.read_text() + "\n")  # any change (blank lines are ignored)
+        regressions.write_text(regressions.read_text(encoding="utf-8") + "\n")  # any change (blank lines are ignored)
 
         report = self.cli("reset").stdout
         for name in ("exercises/ex03_refund_timing_check.py", "playground/idea.py", "data/cases/regressions.jsonl"):
             self.assertIn(name, report)
-        self.assertEqual(ex.read_text(), original + "\n# my attempt\n", "a report must not change anything")
+        self.assertEqual(ex.read_text(encoding="utf-8"), original + "\n# my attempt\n", "a report must not change anything")
 
         refused = self.cli("reset", "--all")  # not interactive and no --yes
         self.assertEqual(refused.returncode, 1)
 
         done = self.cli("reset", "--all", "--yes")
         self.assertEqual(done.returncode, 0, done.stdout + done.stderr)
-        self.assertEqual(ex.read_text(), original)
+        self.assertEqual(ex.read_text(encoding="utf-8"), original)
         self.assertFalse((self.root / "playground" / "idea.py").exists())
         self.assertEqual(sh(self.root, "git", "status", "--porcelain").stdout.strip(), "")
         backups = list((self.root / "backups").rglob("ex03_refund_timing_check.py"))
         self.assertEqual(len(backups), 1)
-        self.assertIn("# my attempt", backups[0].read_text())
+        self.assertIn("# my attempt", backups[0].read_text(encoding="utf-8"))
 
     def test_reset_one_exercise_only(self):
         for n in ("03", "04"):
             path = next((self.root / "exercises").glob(f"ex{n}_*.py"))
-            path.write_text(path.read_text() + "\n# edited\n")
+            path.write_text(path.read_text(encoding="utf-8") + "\n# edited\n")
         self.cli("reset", "--exercises", "3", "--yes")
         status = sh(self.root, "git", "status", "--porcelain").stdout
         self.assertNotIn("ex03", status)
@@ -105,7 +105,7 @@ class TestStart(unittest.TestCase):
             if not before:
                 self.assertIn("new: nothing done yet", first.stdout)
             shutil.copy(root / "solutions" / "ex06_release_decision.py", root / "exercises")
-            (root / "playground" / "my_notes.md").write_text("notes\n")
+            (root / "playground" / "my_notes.md").write_text("notes\n", encoding="utf-8")
             again = sh(root, sys.executable, "-m", "returns_eval", "start")
             self.assertIn("changes can be undone with reset", again.stdout)
             self.assertEqual(done(again.stdout), before | {"6"})
@@ -118,17 +118,17 @@ class TestResetWithoutGit(unittest.TestCase):
             root = Path(tmp) / "repo"
             shutil.copytree(REPO, root, ignore=shutil.ignore_patterns(".git", "__pycache__", "backups"))
             (root / "data" / "cases" / "regressions.jsonl").write_text(
-                (root / "solutions" / "ex08_regression_case.jsonl").read_text())
+                (root / "solutions" / "ex08_regression_case.jsonl").read_text(encoding="utf-8"), encoding="utf-8")
             manifest = root / "data" / "cases" / "manifest.json"
-            data = json.loads(manifest.read_text())
+            data = json.loads(manifest.read_text(encoding="utf-8"))
             start = data["changelog"][0]["version"]
             data["version"] = "9.9"
             data["changelog"].append({"version": "9.9", "date": "2026-08-27", "change": "test"})
-            manifest.write_text(json.dumps(data))
+            manifest.write_text(json.dumps(data), encoding="utf-8")
             out = sh(root, sys.executable, "-m", "returns_eval", "reset", "--cases", "--yes")
             self.assertEqual(out.returncode, 0, out.stdout + out.stderr)
-            self.assertEqual((root / "data" / "cases" / "regressions.jsonl").read_text(), "")
-            restored = json.loads(manifest.read_text())
+            self.assertEqual((root / "data" / "cases" / "regressions.jsonl").read_text(encoding="utf-8"), "")
+            restored = json.loads(manifest.read_text(encoding="utf-8"))
             self.assertEqual((restored["version"], len(restored["changelog"])), (start, 1))
 
 

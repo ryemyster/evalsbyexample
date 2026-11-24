@@ -210,6 +210,7 @@ A judge grades drafts against a written criterion (Part 2, Lesson 12). It's part
 ```bash
 export OPENAI_API_KEY=...                       # or the variable for your provider (see the table below)
 export EVALS_JUDGE_MODEL=<a model name from the provider's docs>
+# Windows PowerShell: $env:OPENAI_API_KEY="..."  and  $env:EVALS_JUDGE_MODEL="..."
 python3 -m returns_eval calibrate playground.my_judge:OpenAIJudge --split calibration
 ```
 

@@ -52,7 +52,7 @@ class TestStarters(unittest.TestCase):
         self.assertIn(worst(break_it.MyOwnMistake), (None, "minor"))
 
     def test_my_case_is_valid(self):
-        case = json.loads((REPO_ROOT / "playground" / "my_case.json").read_text())
+        case = json.loads((REPO_ROOT / "playground" / "my_case.json").read_text(encoding="utf-8"))
         self.assertEqual(validate_case(case), [])
 
     def test_offline_fake_model_requests_are_caught(self):

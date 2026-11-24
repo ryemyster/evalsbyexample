@@ -11,13 +11,13 @@ from returns_eval.grading import SEVERITY
 from returns_eval.human_review import CRITERIA
 
 REPO = Path(__file__).resolve().parent.parent
-CASE_DOC = (REPO / "docs" / "case-format.md").read_text()
-GRADING_DOC = (REPO / "docs" / "grading.md").read_text()
-README = (REPO / "README.md").read_text()
-START = (REPO / "START_HERE.md").read_text()
-TUTOR = (REPO / "TUTOR.md").read_text() + (REPO / "TUTOR-PART2.md").read_text()
-EXERCISES_README = (REPO / "exercises" / "README.md").read_text()
-ALL_DOCS = {p.relative_to(REPO): p.read_text() for p in [*REPO.glob("*.md"), *REPO.glob("docs/*.md"),
+CASE_DOC = (REPO / "docs" / "case-format.md").read_text(encoding="utf-8")
+GRADING_DOC = (REPO / "docs" / "grading.md").read_text(encoding="utf-8")
+README = (REPO / "README.md").read_text(encoding="utf-8")
+START = (REPO / "START_HERE.md").read_text(encoding="utf-8")
+TUTOR = (REPO / "TUTOR.md").read_text(encoding="utf-8") + (REPO / "TUTOR-PART2.md").read_text(encoding="utf-8")
+EXERCISES_README = (REPO / "exercises" / "README.md").read_text(encoding="utf-8")
+ALL_DOCS = {p.relative_to(REPO): p.read_text(encoding="utf-8") for p in [*REPO.glob("*.md"), *REPO.glob("docs/*.md"),
                                                           *REPO.glob("exercises/*.md"), *REPO.glob("data/*/*.md")]}
 
 
@@ -79,9 +79,9 @@ class TestDocs(unittest.TestCase):
         self.assertTrue(all("ILLUSTRATIVE" in p.name for p in costs.glob("*.json")))
 
     def test_agents_auto_load_the_tutor(self):
-        agents = (REPO / "AGENTS.md").read_text()
+        agents = (REPO / "AGENTS.md").read_text(encoding="utf-8")
         self.assertIn("TUTOR.md", agents)
-        claude = (REPO / "CLAUDE.md").read_text().split()
+        claude = (REPO / "CLAUDE.md").read_text(encoding="utf-8").split()
         self.assertEqual(claude, ["@AGENTS.md", "@TUTOR.md"], "CLAUDE.md should only import AGENTS.md and TUTOR.md")
         self.assertIn("## Starting a session", TUTOR)
         self.assertIn("Let's learn evals together", TUTOR)
