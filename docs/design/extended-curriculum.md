@@ -151,7 +151,7 @@ Part 1's quoted outputs did not change. Scripted candidates produce the same res
 | `bash scripts/verify_readme_commands.sh` | all README commands as documented | all README commands as documented |
 | `bash scripts/verify_fresh_clone.sh` | fresh clone verified, including after adding RC-027 | not run separately (the script uses `python3`) |
 
-CI on GitHub (3.9, 3.11, 3.13) hasn't run for this branch yet; nothing has been pushed.
+GitHub CI (pull request #1) passes on Linux with 3.9, 3.11, and 3.13 and on Windows with 3.9 and 3.13, including a PowerShell step that types commands the way a Windows learner would. Two CI fixes were needed along the way, neither caused by Part 2: `ubuntu-latest` (now Ubuntu 26.04) has no Python 3.9 build for setup-python, so 3.9 runs in the official `python:3.9` container; and on Windows with 3.13, tests that cleared the whole environment before calling a local fake server couldn't connect, so they now clear only the model settings.
 
 ### By design
 
