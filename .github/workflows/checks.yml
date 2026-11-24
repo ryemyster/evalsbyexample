@@ -8,13 +8,31 @@ jobs:
   test:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false  # one version's problem shouldn't hide the others' results
       matrix:
-        python-version: ["3.9", "3.11", "3.13"]
+        python-version: ["3.11", "3.13"]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Repository tests
+        run: python3 -m unittest discover -s tests -t . -v
+      - name: Reference solutions pass the exercise tests
+        run: python3 -m exercises all --solution
+      - name: README commands run
+        run: bash scripts/verify_readme_commands.sh
+
+  # Python 3.9 is the version built into macOS, so the course must keep working on it.
+  # setup-python has no 3.9 build for the current ubuntu-latest image, so this job runs
+  # in the official Python 3.9 container instead (it includes git, which the reset tests use).
+  test-python-3-9:
+    runs-on: ubuntu-latest
+    container: python:3.9
+    steps:
+      - uses: actions/checkout@v4
+      - name: Python version
+        run: python3 --version
       - name: Repository tests
         run: python3 -m unittest discover -s tests -t . -v
       - name: Reference solutions pass the exercise tests
