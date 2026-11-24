@@ -97,8 +97,8 @@ class TestStart(unittest.TestCase):
             self.assertIn("saved a starting point", first.stdout)
             self.assertTrue((root / ".git").is_dir())
 
-            def done(text):  # exercise numbers listed as done, e.g. "exercises done 2 of 9 (6, 8)"
-                m = re.search(r"exercises done \d+ of 9 \(([\d, ]+)\)", text)
+            def done(text):  # exercise numbers listed as done, e.g. "exercises done 2 of 17 (6, 8)"
+                m = re.search(r"exercises done \d+ of \d+ \(([\d, ]+)\)", text)
                 return set(m.group(1).split(", ")) if m else set()
 
             before = done(first.stdout)

@@ -17,6 +17,8 @@ The `playground/` folder is yours. Nothing else depends on it. If an experiment 
 | Ask reviewers a new question | `returns_eval/human_review.py` | [Add a review criterion](#add-a-review-criterion) |
 | Give the assistant a new lookup (or a new forbidden action) | `returns_eval/tools.py` | [Add a tool](#add-a-tool) |
 | Grade a real model (Claude, OpenAI, Gemini, DeepSeek, Kimi, Ollama, ...) | `playground/my_model.py` | [Bring your own model](#bring-your-own-model) |
+| Grade drafts with a real judge model | `playground/my_judge.py` | [Add a judge](#add-a-judge) |
+| Practise with models that vary, offline | `returns_eval/candidates/simulated.py` | [Simulated models](#simulated-models) |
 
 ## Add a case
 
@@ -73,7 +75,7 @@ def no_placeholders(case, draft: Draft, trace: Trace, facts: Facts) -> list[str]
     ("no_placeholders", MAJOR, no_placeholders),
 ```
 
-**3. Bump the grader version** in `returns_eval/grading/grader.py`, e.g. `GRADER_VERSION = "1.1"`. Runs record it, and `compare` refuses to compare runs graded by different versions.
+**3. Bump the grader version** in `returns_eval/grading/grader.py`, for example from `"1.2"` to `"1.3"`. Runs record it, and `compare` refuses to compare runs graded by different versions.
 
 **4. Document it.** Add a row to the checks table in [grading.md](grading.md):
 
@@ -94,7 +96,7 @@ CASES PASSED: 0 / 26 (0%)
   no_placeholders                 major                 26 / 26 (100%)
 ```
 
-baseline, candidate-v1, and candidate-v2 keep their results (10, 13, and 26 of 26). Rerun them anyway: old saved runs were graded by version 1.0, and `compare` won't mix versions.
+baseline, candidate-v1, and candidate-v2 keep their results (10, 13, and 26 of 26). Rerun them anyway: old saved runs were graded by the previous version, and `compare` won't mix versions.
 
 Two habits worth keeping. First, write the check's evidence so a reader knows exactly what matched. Second, run it on drafts you know are good before trusting it. A check that fails good drafts trains people to ignore it.
 
@@ -199,6 +201,34 @@ Before a full run against a paid model:
 
 More detail: [llm-adapter.md](llm-adapter.md).
 
+## Add a judge
+
+A judge grades drafts against a written criterion (Part 2, Lesson 12). It's part of grading, so it never imports candidate code. A model-backed judge implements one method, `complete(prompt) -> str`; the base class `LLMJudge` (`returns_eval/judging/base.py`) builds the prompt from a template in `data/judges/`, checks the JSON answer, records unreadable answers as errors, and asks pairwise questions in both orders.
+
+`playground/my_judge.py` has ready-made judges that reuse the provider connections in `my_model.py`, with their own model setting:
+
+```bash
+export OPENAI_API_KEY=...                       # or the variable for your provider (see the table below)
+export EVALS_JUDGE_MODEL=<a model name from the provider's docs>
+python3 -m returns_eval calibrate playground.my_judge:OpenAIJudge --split calibration
+```
+
+Available: `OpenAIJudge`, `GeminiJudge`, `DeepSeekJudge`, `KimiJudge`, `OllamaJudge`, `OpenAICompatibleJudge` (with `EVALS_BASE_URL`), and `ClaudeJudge` (Anthropic's SDK). `EVALS_JUDGE_TEMPERATURE` is optional.
+
+Before relying on it:
+
+1. **Calibrate first, on the calibration split.** It's 24 calls. Read what it misses and where, not just how often it agrees.
+2. **Use a judge from a different family** than the model whose drafts it grades.
+3. **Probe it:** `python3 -m returns_eval bias-check playground.my_judge:OpenAIJudge` makes a few hundred calls (pairs in both orders, five repeats per draft), so check the cost first.
+4. **Version the prompt.** To try your own, copy `data/judges/tone.v1.txt` and pass `--prompt your_file.txt`. `calibrate` lists any prompt problems first. A changed prompt is a changed grader: recalibrate.
+5. **Run the holdout once**, at the end.
+
+To register a judge by name, add it to `BUILT_IN_JUDGES` at the `EXTEND HERE` comment in `returns_eval/judging/__init__.py`.
+
+## Simulated models
+
+`returns_eval/candidates/simulated.py` has scripts that vary like a model does, with each chance written at the top of the file. To make your own, subclass `SimulatedModel` and set `chance` (or `base_behavior`, `timeout_chars`, `median_seconds`, `price_key`). Results depend on the seed (`--seed`, or `EVALS_SEED`), so a run repeats exactly. Compare versions with `python3 -m returns_eval variance A B --runs 10`.
+
 ## Start over
 
 ```bash
@@ -206,7 +236,7 @@ python3 -m returns_eval clean                  # delete saved runs (keeps review
 python3 -m returns_eval reset                  # show what differs from the original; changes nothing
 python3 -m returns_eval reset --exercises 3    # put back one exercise
 python3 -m returns_eval reset --playground     # put back the playground starters
-python3 -m returns_eval reset --code           # undo experiments in returns_eval/, gates, policies
+python3 -m returns_eval reset --code           # undo experiments in returns_eval/, gates, policies, Part 2 data
 python3 -m returns_eval reset --all            # everything, including saved runs
 ```
 

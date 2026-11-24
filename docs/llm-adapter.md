@@ -22,6 +22,12 @@ case ──> LLMCandidate.build_prompt() ──> complete(prompt) ──> parse_
 - **Parsing.** It expects a JSON object with `resolution`, `order_id`, `reply_text`, `note_for_agent`, and optionally `actions`. Text around the JSON, code fences, and `<think>` reasoning are ignored. An unknown `resolution` becomes `escalate`.
 - **Actions.** If the model asks for tools in `actions`, each one goes through `tools.call(...)`. Forbidden ones (`issue_refund`, `send_reply`, ...) are recorded, nothing happens in the sandbox, and the `action_boundary` check fails as critical. Don't give a model a path around the toolbox, or the grader can't see what it did.
 
+## What gets recorded
+
+- **The raw reply.** Each draft keeps the model's raw text (`raw_output`). The grader's `structured_output` check re-reads it with its own parser, so a reply the adapter had to repair (for example an unknown `resolution` turned into `escalate`) still fails as a major problem instead of looking careful.
+- **Tokens.** If the provider's response reports usage, the run records input and output tokens per draft, and the report estimates cost from a prices file. The shipped file has made-up prices for the simulated models only; for a real model, copy `data/economics/prices.ILLUSTRATIVE.json`, add your provider's current prices under the model's name, and set `EVALS_PRICES` to your copy.
+- **Time** is measured on your computer for each draft.
+
 ## Writing your own
 
 ```python
@@ -44,8 +50,8 @@ Use the provider's documentation for client and method names; don't guess them. 
 
 ## Things to keep true
 
-- **Use repeats.** A model can answer the same input differently. With `--repeat 3`, a case passes only if all three attempts pass.
+- **Use repeats.** A model can answer the same input differently. With `--repeat 3`, a case passes only if all three attempts pass. To compare two versions fairly, use `python3 -m returns_eval variance A B --runs 10`. Temperature 0 helps but isn't a guarantee of identical answers ([sources.md](sources.md)).
 - **Record the model version.** Put the model name (and your prompt version, if you change the prompt) in `version`, so runs stay comparable.
 - **Change the prompt deliberately.** `PROMPT_TEMPLATE` is part of the candidate. If you edit it, bump `version` and rerun every case.
 - **Watch for data leaving your machine.** The cases are fictional, so sending them to a provider is fine. Real tickets are not; follow your organization's data rules first.
-- **Calibrate any model grader.** If you later use a model to grade drafts, compare its judgments with human scorecards on the same drafts first, the way `review-summary` compares two reviewers.
+- **Calibrate any model grader.** To use a model as a judge, see [extending.md](extending.md#add-a-judge): calibrate it against the labeled drafts with `calibrate`, and probe it with `bias-check`, before trusting it.

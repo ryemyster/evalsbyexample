@@ -28,6 +28,31 @@ Plain-language meanings for the terms used in this course. If a word isn't here,
 | **Regression case** | A case added after a real failure, so the same failure can't come back unnoticed. |
 | **Illustrative** | Made up for teaching. The pilot data and reviewer ratings here are illustrative, not real results. |
 | **Median** | The middle value: half the results are below it and half above. Used for time per ticket, because one very slow ticket would distort an average. |
+| **Deterministic / probabilistic** | A deterministic candidate gives the same answer to the same input every time (the course's scripts). A probabilistic one, like a language model, can answer differently each time, so you test it several times. |
+| **Simulated model / judge** | A script with built-in randomness or known flaws that behaves like a model, so you can practise for free. Not a language model; its numbers are teaching output. |
+| **Seed** | The number that decides a simulated model's dice rolls. Same seed, same results. |
+| **95% range (confidence interval)** | The range the real value probably lies in, given how few cases or runs you have. If the range for a difference includes 0, you can't tell the versions apart. |
+| **pass@k / pass^k** | pass@k: right at least once in k tries. pass^k: right every time in k tries. A support assistant needs the second. |
+| **Structured output** | A reply in an agreed format (here, JSON with named fields) so code can read it. |
+| **Rubric** | The written criteria raters use. A good one says what a rater would see in the reply, what each value means, and who grades it. |
+| **Binary / ordinal / continuous** | Two values (ok/problem); ordered levels (correct/debatable/incorrect); a measured number (minutes). |
+| **Reference-based / reference-free** | Graded against something (the expected behavior, the record) or on the reply alone (tone). |
+| **Kappa (Cohen's kappa)** | Agreement between two raters beyond what chance would give. 1 = always agree, 0 = no better than chance. |
+| **Annotation / adjudication** | Labeling drafts; and settling disagreements between labelers by discussion, with a written reason. |
+| **Judge (LLM-as-judge)** | A model that grades drafts against a written criterion. A grader, so it must be checked against people. |
+| **Pointwise / pairwise** | Grading one reply at a time, or picking the better of two. |
+| **Calibration (of a judge)** | Measuring a judge against people's labels to learn what it catches and misses. |
+| **Train / calibration / holdout split** | Labeled drafts kept apart: examples you may show the judge; drafts to tune on; drafts used once at the end for a fair estimate. |
+| **Contamination / leakage** | When test material leaks into what's being tuned or trained, so scores look better than they are. |
+| **Precision / recall** | Of the drafts a judge flagged, how many were real problems; of the real problems, how many it flagged. |
+| **False acceptance / false rejection** | A missed problem (passed though bad); a false alarm (flagged though fine). |
+| **Position / verbosity / self-preference bias** | A judge favoring the reply shown first; the longer reply; or text from its own model family. |
+| **Prompt injection** | Text inside content (a customer message, a reply) that tries to give a model instructions. |
+| **Trace / trajectory** | The record of every step a request went through; the path as a whole. |
+| **Failure attribution** | Working out which layer caused a failure: model, orchestration, policy, data, evaluator, or human review. |
+| **Shadow / canary** | Running a new version on real requests without showing its output to anyone; or showing it on a small share of real requests. |
+| **Distribution shift** | Real traffic that differs from what you tested on, like much longer messages. |
+| **Drift** | Results changing over time without anyone changing the code, for example after a provider updates a model. |
 | **n / N, e.g. 13 / 26 (50%)** | How many out of how many. The course always shows both numbers, because "50%" means something different with 2 cases than with 2,000. |
 
 ## Store and job terms

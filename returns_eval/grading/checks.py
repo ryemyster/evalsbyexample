@@ -142,6 +142,10 @@ CHECKS: list[tuple[str, str, Callable[..., list[str]]]] = [
     ("forbidden_content", MAJOR, forbidden_content),
     ("length", MINOR, length),
 ]
-SEVERITY = {name: sev for name, sev, _ in CHECKS} | {"candidate_error": MAJOR}
+# Two more checks run only when they apply: candidate_error when there is no draft, and
+# structured_output when a model-backed candidate's raw reply is on the draft (grader.py).
+SEVERITY = {name: sev for name, sev, _ in CHECKS} | {"candidate_error": MAJOR, "structured_output": MAJOR}
 QUESTION = {name: (fn.__doc__ or "").strip() for name, _, fn in CHECKS} | {
-    "candidate_error": "Did it write a draft without crashing?"}
+    "candidate_error": "Did it write a draft without crashing?",
+    "structured_output": "Did the model's raw reply follow the agreed format (checked by the grader, not the adapter)?"}
+CONDITIONAL_CHECKS = ("candidate_error", "structured_output")  # shown in reports only when they fail

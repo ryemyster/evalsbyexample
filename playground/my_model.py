@@ -102,6 +102,7 @@ class OpenAICompatibleModel(LLMCandidate):
         self.key_optional = preset.get("key_optional", False)
         self.docs = preset.get("docs", "your provider's API documentation")
         self.temperature = os.environ.get("EVALS_TEMPERATURE")
+        self.last_usage = None  # tokens the provider reports for the latest call; the harness records it
 
     def complete(self, prompt: str) -> str:
         if not self.model:
@@ -126,6 +127,10 @@ class OpenAICompatibleModel(LLMCandidate):
             raise RuntimeError(f"HTTP {exc.code} from {url}: {detail}") from exc
         except urllib.error.URLError as exc:
             raise RuntimeError(f"Could not reach {url} ({exc.reason}). Check the URL, or that the server is running.") from exc
+        usage = data.get("usage") or {}
+        if usage:  # Chat Completions reports prompt_tokens and completion_tokens
+            self.last_usage = {"input_tokens": usage.get("prompt_tokens"), "output_tokens": usage.get("completion_tokens"),
+                               "source": "provider", "price_key": self.model}
         content = data["choices"][0]["message"].get("content")
         if not content:
             raise RuntimeError(f"{self.provider} returned no text content (finish_reason: "
@@ -169,6 +174,7 @@ class ClaudeModel(LLMCandidate):
         self.version = self.model
         self._client = None
         self.served_by = None
+        self.last_usage = None
 
     def make_client(self):
         try:
@@ -194,6 +200,11 @@ class ClaudeModel(LLMCandidate):
             category = getattr(response.stop_details, "category", None)
             raise RuntimeError(f"Model declined the request (category: {category}).")
         self.served_by = response.model
+        usage = getattr(response, "usage", None)
+        if usage is not None:  # the Messages API reports input_tokens and output_tokens
+            self.last_usage = {"input_tokens": getattr(usage, "input_tokens", None),
+                               "output_tokens": getattr(usage, "output_tokens", None),
+                               "source": "provider", "price_key": self.model}
         return "".join(block.text for block in response.content if block.type == "text")
 
     def draft_reply(self, request: Request, tools: Toolbox) -> Draft:

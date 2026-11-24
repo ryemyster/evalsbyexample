@@ -1,0 +1,19 @@
+{
+  "dataset": "tone-labels",
+  "version": "1.0",
+  "file": "tone.ILLUSTRATIVE.jsonl",
+  "criterion": "tone",
+  "rubric": "draft-quality 1.0",
+  "first_rubric": "draft-quality 0.1",
+  "positive_label": "problem",
+  "splits": {
+    "train": "Examples you may show a judge or use while writing the rubric.",
+    "calibration": "Use to tune a judge's prompt and decide how to use it. Look as often as you like.",
+    "holdout": "Use once, at the end, for the estimate you report. If you tune against it, it stops being a fair test."
+  },
+  "split_rule": "By case: every draft of the same case is in the same split, so near-duplicate drafts can't leak between splits.",
+  "illustrative": true,
+  "changelog": [
+    {"version": "1.0", "date": "2026-11-24", "change": "64 drafts labeled by two fictional annotators, first with rubric 0.1, then with rubric 1.0. Disagreements under 1.0 adjudicated; see each item's note."}
+  ]
+}

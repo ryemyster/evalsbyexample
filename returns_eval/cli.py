@@ -68,7 +68,15 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--review", nargs="+", metavar="CSV", help="human review scorecards for gate G6")
     sp.add_argument("--repeat", type=int, default=1, help="attempts per case; a case passes only if all pass")
     sp.add_argument("--only", nargs="+", metavar="CASE_ID", help="run only these cases (e.g. to try a paid model cheaply)")
+    sp.add_argument("--seed", type=int, help="for candidates with randomness: which roll of the dice (default 1)")
     sp.add_argument("--out", type=Path, default=RUNS_DIR, help="where to save the run file (default: runs/)")
+    cases_arg(sp)
+
+    sp = cmd("variance", cmd_variance, "Run candidates several times on the same cases: is a difference real, or luck?")
+    sp.add_argument("items", nargs="+", metavar="CANDIDATE", help="the first one is compared with each of the others")
+    sp.add_argument("--runs", type=int, default=10, help="runs per candidate (default 10)")
+    sp.add_argument("--seed", type=int, default=1, help="seed of the first run; later runs use the next seeds")
+    sp.add_argument("--only", nargs="+", metavar="CASE_ID", help="run only these cases")
     cases_arg(sp)
 
     sp = cmd("report", cmd_report, "Print the report for a saved run, or one case in detail.")
@@ -103,6 +111,40 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("run")
     sp.add_argument("scorecards", nargs="+", metavar="CSV")
 
+    sp = cmd("rubric-check", cmd_rubric_check, "Check that a rubric's criteria say what a rater should look for.")
+    sp.add_argument("file", type=Path)
+
+    sp = cmd("labels", cmd_labels, "Show the human-labeled drafts: splits, annotator agreement, and leakage checks.")
+    sp.add_argument("--file", type=Path, help="label file (default: the one in data/labels/manifest.json)")
+
+    def judge_args(sp: argparse.ArgumentParser) -> None:
+        sp.add_argument("--prompt", type=Path, help="judge prompt template (default: data/judges/tone.v1.txt)")
+
+    sp = cmd("judge", cmd_judge, "Have an automated judge grade the drafts in a saved run (no labels needed).")
+    sp.add_argument("judge", help="judge-a, judge-b, or module.path:ClassName")
+    sp.add_argument("--run", required=True, help="run file, 'latest', or 'latest:<candidate>'")
+    sp.add_argument("--criterion", default="tone", choices=("tone", "complete"))
+    sp.add_argument("--versus", metavar="RUN", help="compare with another run's drafts, case by case (pairwise, both orders)")
+    judge_args(sp)
+
+    sp = cmd("bias-check", cmd_bias_check, "Probe a judge: does its verdict move when something irrelevant changes?")
+    sp.add_argument("judge", help="judge-a, judge-b, or module.path:ClassName")
+    judge_args(sp)
+
+    sp = cmd("calibrate", cmd_calibrate, "Compare judges with people's labels: what each one catches, misses, and flags wrongly.")
+    sp.add_argument("judges", nargs="+", metavar="JUDGE", help="judge-a, judge-b, or module.path:ClassName")
+    sp.add_argument("--split", default="calibration", choices=("train", "calibration", "holdout", "all"))
+    judge_args(sp)
+
+    sp = cmd("budget", cmd_budget, "Work out a checking plan's weekly cost and how many problems still get through.")
+    sp.add_argument("plan", type=Path, help="a plan file, e.g. exercises/ex15_eval_budget.json")
+    sp.add_argument("--costs", type=Path, help="assumptions file (default: data/economics/costs.ILLUSTRATIVE.json)")
+
+    sp = cmd("traces", cmd_traces, "Check ILLUSTRATIVE production traces step by step, and apply the rollback triggers.")
+    sp.add_argument("--deployment", choices=("production", "canary"), help="show only one deployment")
+    sp.add_argument("--trace", metavar="TRACE_ID", help="show one trace in full, e.g. T-105")
+    sp.add_argument("--file", type=Path, help="trace file (default: data/production/traces.ILLUSTRATIVE.jsonl)")
+
     sp = cmd("clean", cmd_clean, "Delete saved runs in runs/ (keeps review sheets and decision briefs unless --reviews).")
     sp.add_argument("--reviews", action="store_true", help="also delete review sheets and decision briefs in runs/")
 
@@ -112,7 +154,7 @@ def build_parser() -> argparse.ArgumentParser:
     sp.add_argument("--exercises", nargs="*", type=int, metavar="N",
                     help="exercise files; give numbers to reset only those (e.g. --exercises 3 4)")
     sp.add_argument("--playground", action="store_true", help="playground/")
-    sp.add_argument("--code", action="store_true", help="returns_eval/, data/gates.json, data/policies/ (undo experiments)")
+    sp.add_argument("--code", action="store_true", help="returns_eval/, data/gates.json, data/policies/, and Part 2's data folders (undo experiments)")
     sp.add_argument("--runs", action="store_true", help="delete every saved run and review sheet (sheets are backed up)")
     sp.add_argument("--all", action="store_true", help="all of the above")
     sp.add_argument("--from", dest="ref", default="HEAD",
@@ -290,6 +332,10 @@ def cmd_run(args) -> int:
     if args.only:
         case_set = subset(case_set, args.only)
     candidate = load_candidate(args.candidate)
+    if args.seed is not None:
+        if not hasattr(candidate, "seed"):
+            raise SystemExit(f"{args.candidate} has no randomness, so --seed changes nothing. Leave it out.")
+        candidate.seed = args.seed
     run = run_eval(candidate, case_set, repeat=args.repeat)
     path = save_run(run, args.out)
     _print(report.summary(run))
@@ -307,6 +353,22 @@ def cmd_run(args) -> int:
                  next((r for r in run["results"] if not r["passed"]), None))
     if worst:
         print(f"Look at one failure in detail: python3 -m returns_eval report {_rel(path)} --case {worst['case_id']}")
+    return 0
+
+
+def cmd_variance(args) -> int:
+    from . import variance
+
+    if args.runs < 2:
+        raise SystemExit("--runs must be 2 or more; the point is to see how results move between runs.")
+    case_set = load_case_set(_expand(args.cases))
+    if args.only:
+        case_set = subset(case_set, args.only)
+    named = {}
+    for item in args.items:
+        runs = variance.repeated_runs(item, case_set, args.runs, args.seed)
+        named[runs[0]["meta"]["candidate"]] = runs
+    _print(variance.report_lines(named, seed=args.seed))
     return 0
 
 
@@ -411,13 +473,178 @@ def cmd_review_summary(args) -> int:
         for value, n in counts.items():
             print(f"    {value:<16}{report.frac(n, s.reviewed):>16}")
     for (a, b), crit in s.agreement.items():
-        print(f"\nHow often {a} and {b} gave the same rating")
+        print(f"\nHow often {a} and {b} gave the same rating, and how much of that is beyond chance (kappa)")
         for c, (agree, total) in crit.items():
-            print(f"  {c:<24}{report.frac(agree, total):>16}")
+            kappa = s.kappa.get((a, b), {}).get(c)
+            kappa_text = "" if kappa is None else f"   kappa {kappa:.2f}"
+            print(f"  {c:<24}{report.frac(agree, total):>16}{kappa_text}")
+        print("  kappa: 1 = always agree; 0 = no better than chance (agreeing on the most common rating is easy).")
     if s.disagreements:
         print("\nDisagreements to talk through (then make the rating guide clearer, or fix the case):")
         for d in s.disagreements:
             print(f"  {d}")
+    return 0
+
+
+def cmd_rubric_check(args) -> int:
+    from . import rubric
+
+    data = rubric.load(args.file)
+    errors, warnings = rubric.lint(data)
+    print(f"Rubric {data.get('rubric', '?')} {data.get('version', '?')}: {len(data.get('criteria', []))} criteria "
+          f"({_rel(args.file)})")
+    for c in data.get("criteria", []):
+        if isinstance(c, dict):
+            print(f"  {c.get('id', '?'):<26}{str(c.get('scale', '?')):<12}graded by {str(c.get('graded_by', '?')):<7}"
+                  f"reference: {c.get('reference', '?')}")
+    if errors:
+        print(f"\nNot ready: {len(errors)} problem(s). Raters using it would disagree, and so would a judge.")
+        for e in errors:
+            print(textwrap.fill(e, width=92, initial_indent="  - ", subsequent_indent="    "))
+    for w in warnings:
+        print(textwrap.fill(f"note: {w}", width=92, initial_indent="  ", subsequent_indent="    "))
+    if not errors:
+        print("\nReady: every criterion says what a rater looks at, what each value means, and who grades it.")
+    return 1 if errors else 0
+
+
+def cmd_labels(args) -> int:
+    from . import labels
+
+    _print(labels.health(labels.load_items(args.file)))
+    return 0
+
+
+def _judge_items(split: str | None = None, path=None):
+    from . import labels
+    from .judging import with_case_context
+
+    return with_case_context(labels.load_items(path, split), _cases_by_id())
+
+
+def cmd_judge(args) -> int:
+    from .judging import items_from_run, load_judge
+
+    judge = load_judge(args.judge, args.prompt)
+    run = load_run(resolve_run(args.run))
+    items = items_from_run(run, _cases_by_id(_case_files(run)))
+    label = f"{run['meta']['candidate']} (run {run['meta']['run_id']})"
+    if judge.simulated:
+        print("SIMULATED judge: a script that behaves like an LLM judge with known flaws, not a language model.")
+    if args.versus:
+        other = load_run(resolve_run(args.versus))
+        theirs = {i["case_id"]: i for i in items_from_run(other, _cases_by_id(_case_files(other)))}
+        pairs = [(i, theirs[i["case_id"]]) for i in items if i["case_id"] in theirs]
+        name_a, name_b = run["meta"]["candidate"], other["meta"]["candidate"]
+        results = [judge.pairwise_both_orders(a, b) for a, b in pairs]
+        print(f"{judge.name} compared the tone of {name_a} and {name_b} on {len(pairs)} cases, asking each "
+              "question twice with the order swapped.\n")
+        first = sum(r["a_first"] == "A" for r in results)
+        print(f"  asked once, {name_a} shown first: {name_a} won {report.frac(first, len(results))}")
+        print(f"  asked once, {name_b} shown first: {name_b} won "
+              f"{report.frac(sum(r['b_first'] == 'B' for r in results), len(results))}")
+        print(f"  the order decided the winner in {report.frac(sum(r['order_dependent'] for r in results), len(results))} cases")
+        print("\n  Counting a win only when both orders agree:")
+        for who, key in ((name_a, "A"), (name_b, "B"), ("tie (no difference, or the order decided)", "tie"),
+                         ("unreadable answers", "error")):
+            print(f"    {who:<44}{report.frac(sum(r['winner'] == key for r in results), len(results)):>16}")
+        return 0
+    verdicts = [judge.pointwise(i, args.criterion) for i in items]
+    print(f"{judge.name} graded {len(items)} drafts from {label} for '{args.criterion}'.\n")
+    for value in ("ok", "problem", "error"):
+        print(f"  {value:<10}{report.frac(sum(v['verdict'] == value for v in verdicts), len(verdicts)):>16}")
+    flagged = [(i, v) for i, v in zip(items, verdicts) if v["verdict"] != "ok"]
+    if flagged:
+        print("\nNot ok:")
+        for i, v in flagged:
+            conf = "" if v["confidence"] is None else f" (confidence {v['confidence']:.2f})"
+            print(textwrap.fill(f"{i['case_id']}  {v['verdict']}{conf}: {v['reason']}", width=92,
+                                initial_indent="  ", subsequent_indent="          "))
+    if args.criterion == "complete":
+        differ = [(i, v) for i, v in zip(items, verdicts)
+                  if v["verdict"] != "error" and (v["verdict"] == "problem") != ("required_content" in i["failed_checks"])]
+        if differ:
+            print("\nWhere the judge and the required_content check (exact phrases) disagree:")
+            for i, v in differ:
+                check = "FAIL" if "required_content" in i["failed_checks"] else "pass"
+                print(textwrap.fill(f"{i['case_id']}: check {check}, judge {v['verdict']}: {v['reason']}", width=92,
+                                    initial_indent="  ", subsequent_indent="    "))
+            print("  Read those drafts yourself. Which one was right? Neither is the answer key; people are.")
+    print("\nThis judge hasn't been checked against people for this use yet. See: python3 -m returns_eval calibrate")
+    return 0
+
+
+def cmd_bias_check(args) -> int:
+    from .judging import load_judge, probes
+
+    items = [i for i in _judge_items() if i["split"] in ("train", "calibration")]
+    judge = load_judge(args.judge, args.prompt)
+    results = probes.run_probes(lambda: load_judge(args.judge, args.prompt), items, args.prompt,
+                                lambda p: load_judge(args.judge, p))
+    label = _rel(args.prompt) if args.prompt else "data/judges/tone.v1.txt"
+    _print(probes.report_lines(judge, results, label, len(items)))
+    return 0
+
+
+def cmd_calibrate(args) -> int:
+    from .judging import calibration, load_judge, prompt_problems
+
+    items = _judge_items(args.split)
+    if args.prompt:
+        problems = prompt_problems(args.prompt.read_text(encoding="utf-8"))
+        for p in problems:
+            print(textwrap.fill(f"Prompt problem: {p}", width=92, subsequent_indent="  "))
+        if problems:
+            print()
+    named = {}
+    for spec in args.judges:
+        judge = load_judge(spec, args.prompt)
+        named[judge.name] = calibration.summarize(items, calibration.judge_items(judge, items))
+    _print(calibration.report_lines(named, args.split, len(items)))
+    return 0
+
+
+def cmd_budget(args) -> int:
+    import json
+
+    from . import economics
+
+    if not args.plan.exists():
+        raise SystemExit(f"Plan file not found: {args.plan}. Start from exercises/ex15_eval_budget.json.")
+    try:
+        plan = json.loads(args.plan.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f"{args.plan} isn't valid JSON ({exc.msg}, line {exc.lineno}).") from exc
+    costs = economics.load_costs(args.costs)
+    commands = set(build_parser()._subparsers._group_actions[0].choices)
+    problems = economics.plan_problems(plan, commands)
+    threshold = plan.get("people_check_unsure_below")
+    cases = _cases_by_id()
+    rates = usage = None
+    if plan.get("judge") in ("judge-a", "judge-b") and plan.get("measured_on") in ("calibration", "holdout", "calibration+holdout"):
+        rates, usage = economics.judge_rates(plan["judge"], plan["measured_on"], cases, threshold)
+    result = economics.evaluate(plan, costs, rates, usage)
+    everyone = {"judge": None, "people_random_share": {s: 1.0 for s in costs["segment_share"]}}
+    nobody = {"judge": None}
+    references = {"people check every draft, no judge": economics.evaluate(everyone, costs, None, None),
+                  "no judge and no people": economics.evaluate(nobody, costs, None, None)}
+    _print(economics.report_lines(plan, costs, result, references, usage, problems))
+    ok = not problems and result["eval_usd"] <= costs["weekly_budget_usd"] and \
+        result["totals"]["missed"] <= costs["team_max_missed_per_week"]
+    return 0 if ok else 1
+
+
+def cmd_traces(args) -> int:
+    from . import production
+
+    traces = production.load_traces(args.file)
+    if args.trace:
+        found = [t for t in traces if t["trace_id"] == args.trace.upper()]
+        if not found:
+            raise SystemExit(f"No trace {args.trace}. Traces run from {traces[0]['trace_id']} to {traces[-1]['trace_id']}.")
+        _print(production.trace_lines(found[0]))
+        return 0
+    _print(production.summary_lines(traces, args.deployment))
     return 0
 
 

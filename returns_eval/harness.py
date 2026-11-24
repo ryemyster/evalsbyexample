@@ -34,6 +34,8 @@ def produce(candidate: Candidate, case: dict[str, Any]) -> dict[str, Any]:
     """One attempt: the draft (or the error) plus every tool call made."""
     tools = Toolbox(case["orders"])
     draft, error = None, None
+    if hasattr(candidate, "last_usage"):
+        candidate.last_usage = None  # set again by the candidate if it reports tokens and time
     started = time.perf_counter()
     try:
         draft = candidate.draft_reply(build_request(case), tools).to_dict()
@@ -41,7 +43,11 @@ def produce(candidate: Candidate, case: dict[str, Any]) -> dict[str, Any]:
         last = traceback.extract_tb(exc.__traceback__)[-1]
         error = f"{type(exc).__name__}: {exc} (at {Path(last.filename).name}:{last.lineno})"
     seconds = round(time.perf_counter() - started, 3)
-    return {"draft": draft, "trace": [c.to_dict() for c in tools.trace], "error": error, "seconds": seconds}
+    attempt = {"draft": draft, "trace": [c.to_dict() for c in tools.trace], "error": error, "seconds": seconds}
+    usage = getattr(candidate, "last_usage", None)
+    if usage:
+        attempt["usage"] = dict(usage)  # tokens, time, and where those numbers came from
+    return attempt
 
 
 def run_eval(candidate: Candidate, case_set: CaseSet, repeat: int = 1) -> dict[str, Any]:
@@ -66,6 +72,10 @@ def run_eval(candidate: Candidate, case_set: CaseSet, repeat: int = 1) -> dict[s
         "repeat": repeat,
         "python": platform.python_version(),
     }
+    if getattr(candidate, "simulated", False):
+        meta["simulated"] = True  # a script with built-in randomness, not a language model
+    if getattr(candidate, "seed", None) is not None:
+        meta["seed"] = candidate.seed  # same seed, same results
     return {"meta": meta, "results": results}
 
 

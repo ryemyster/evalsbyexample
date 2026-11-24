@@ -1,6 +1,6 @@
 [project]
 name = "evalsbyexample"
-version = "1.0.0"
+version = "1.1.0"
 description = "A hands-on, offline tutorial that teaches product managers to define and use evals, using an AI assistant that drafts replies to return requests."
 readme = "README.md"
 requires-python = ">=3.9"
@@ -13,4 +13,4 @@ dependencies = []
 #   python3 -m exercises all
 
 [tool.setuptools]
-packages = ["returns_eval", "returns_eval.candidates", "returns_eval.grading"]
+packages = ["returns_eval", "returns_eval.candidates", "returns_eval.grading", "returns_eval.judging"]

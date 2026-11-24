@@ -1,6 +1,6 @@
 # Who owns what
 
-A short guide for the product manager running an eval like this one. Adapt the names to your organization; the split of responsibilities is the point.
+A short guide for the product manager running an eval like this one. Adapt the names to your organization; the split of responsibilities is the point. Part 2 adds [decision rights across roles](#decision-rights-across-roles), [judges and evaluation cost](#judges-and-the-cost-of-checking), and [after launch](#after-launch-traces-shadow-and-canary).
 
 ## What does the PM own?
 
@@ -126,3 +126,37 @@ Set the threshold for each before testing, and write down what happens when a ro
 Name the eval owner, policy owner, and rollback owner before the first stage, and rerun every case after any model, prompt, or policy-source change.
 
 **5. Present the decision on one page.** `python3 -m returns_eval brief baseline candidate-v2 --review data/human_review/*.csv` writes a decision brief with the evidence, sample sizes, gates, and stop conditions filled in. You add the parts only you can write: why now, what you're asking the team to approve, and who owns what.
+
+## Decision rights across roles
+
+Who decides what varies by company: size, regulation, and how risky the feature is all change it. The table below is **one way** to split it, not the right way. What matters is that every row has a named owner before the first run, and that people know who can stop a launch.
+
+| Decision | Often owned by | Often consulted | Notes |
+|---|---|---|---|
+| The question the eval answers, and the launch call | Product manager | Everyone below | In some companies a risk committee or GM makes the final call. |
+| Which failures are critical | Product manager with domain experts | Security and compliance, legal | Write them down before results arrive. |
+| What counts as a correct answer (cases, references, rubric) | Domain experts (here, the policy owner) | Product manager, human reviewers | Settle reference disputes here, not by changing a check. |
+| Candidate, prompts, model choice, tools and permissions | Engineering | Security (permissions, data flow) | The action boundary is enforced in the system, not only tested. |
+| Checks, judges, and their prompts | Engineering, or an evaluation owner | Domain experts | A judge is a grader: changing its prompt is a change to the eval. |
+| Calibration: whether a judge is fit for a use | Evaluation owner with domain experts | Product manager | Signed off on the calibration split; confirmed once on the holdout. |
+| Human review: labels, adjudication, review quality | Human reviewers' lead | Domain experts | Watch for rubber-stamping (seconds per approval). |
+| Data handling: what can be sent to which provider, retention | Security and compliance | Engineering | Includes traces and labels, not just prompts. |
+| Evaluation budget | Product manager with operations | Finance, engineering | Spend where the judge is weak; see [techniques.md](techniques.md#sampling-and-budgets). |
+| Rollback triggers and the switch | Operational owner (on-call or support operations) | Product manager, engineering | Agreed before a shadow or canary; the owner can act without a meeting. |
+| Production failure triage | Owner of the layer that failed | Evaluation owner | Model failures become cases; other layers get their own fixes and tests. |
+
+Frameworks such as the NIST AI Risk Management Framework ask organizations to define and document these roles and oversight; they don't prescribe one organizational model ([sources.md](sources.md)).
+
+## Judges and the cost of checking
+
+- **Don't adopt a judge on its headline agreement.** Two judges can both agree with people 80% of the time and fail in opposite ways (Lesson 13). Decide which mistake costs more where the judge will be used, then read recall, precision, and results by segment.
+- **No universal bar.** A required recall comes from what a missed problem costs and what a false alarm costs, not from a benchmark or someone else's percentage ([sources.md](sources.md#reviewed-but-not-relied-on)).
+- **Budget for recalibration.** Labels go stale as drafts, prompts, models, and traffic change. A few dozen fresh labels a month is a line item, not an afterthought.
+- **Spend people where the judge is blind.** In the course's assumptions, a judge that's honest about when it's unsure, with unsure verdicts sent to people and spot checks where it's blind, costs less than a stricter judge whose false alarms all need a person (Lesson 14).
+
+## After launch: traces, shadow, and canary
+
+- **Evaluate the system, not just the model.** A good draft can still go to the wrong ticket, use last season's policy, or be approved in three seconds. Trace checks (Lesson 15) find symptoms; owners of each layer fix causes.
+- **Shadow before canary, canary before rollout.** Shadow runs a new version on real requests with nothing shown to anyone. A canary shows it on a small share. Both need rollback triggers agreed in advance.
+- **Compare test cases with real traffic.** If real messages are much longer than any test case, the offline eval can't see failures that only happen on long messages.
+- **Treat evaluator failures as incidents.** A judge that errors and gets counted as a pass is a silent failure in your safety net.

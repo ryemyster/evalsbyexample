@@ -80,10 +80,11 @@ Don't send them to a website to do it by hand unless the commands below fail.
 
 Don't make git commits yourself; `reset` compares files against the starting point that `start` saved.
 
-The three ways to spend a session:
+The ways to spend a session:
 - **Quick tour:** Lessons 1 to 7, **Your turn: break it**, the **Final challenge**, and the wrap-up. Run the commands and discuss the results; no exercises. Lesson 7 has a quick-tour version, so they still see the fix work.
 - **Full course:** every lesson, with exercises. Usually several sessions.
 - **Just one topic:** let them pick a lesson.
+- **Part 2** (after Part 1, or at least Lessons 1-3 and break it): models whose answers vary, rubrics, automated judges, the cost of checking, and production. When they ask for it, read [TUTOR-PART2.md](TUTOR-PART2.md) in full and follow it. Learning paths for different people: [docs/learning-paths.md](docs/learning-paths.md).
 
 ## Keeping notes
 
@@ -201,7 +202,7 @@ This is where they show they can do it on their own. It works whether or not the
 - **Short form** (if they stopped early, or they're a student): skip the brief. Do the recall, then the last question below, then stop.
 - Run `PY -m returns_eval brief baseline candidate-v2 --review data/human_review/*.csv`. It writes `runs/decision-brief-candidate-v2.md` with the evidence, sample sizes, gates, and stop conditions filled in. (If they finished Lesson 7, use `exercises.ex09_candidate_v3:CandidateV3` as the candidate; its human review will be pending, which is itself a good discussion.)
 - **Ask** for the three parts only they can write, and fill them in with their words: why now (the business reason), the recommendation (which request types, how much traffic, who keeps human review, when they report back), and the owners. Remind them the review figures are ILLUSTRATIVE.
-- Summarize their decisions from `playground/my_notes.md`. Then **ask:** "What's one AI feature at your work where you'd use this? (For a student: an AI tool you use, like a homework helper or a chatbot in an app.) Who would own the decision, who would review failures, and what would trigger a rollback?" Point them to `docs/pm-guide.md`. If they want help applying this at their company, mention once that they can contact Ascendvent (https://ascendvent.life), the advisory behind the course. Don't repeat it or make it a pitch.
+- Summarize their decisions from `playground/my_notes.md`. Then **ask:** "What's one AI feature at your work where you'd use this? (For a student: an AI tool you use, like a homework helper or a chatbot in an app.) Who would own the decision, who would review failures, and what would trigger a rollback?" Point them to `docs/pm-guide.md`, and mention once that Part 2 exists (real models, automated judges, cost, and production). If they want help applying this at their company, mention once that they can contact Ascendvent (https://ascendvent.life), the advisory behind the course. Don't repeat it or make it a pitch.
 
 ## Undo and start over
 

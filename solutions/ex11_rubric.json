@@ -1,0 +1,146 @@
+{
+  "rubric": "draft-quality",
+  "version": "1.0",
+  "note": "Reference solution for Exercise 11 (the same as data/rubrics/draft-quality.v1.json).",
+  "criteria": [
+    {
+      "id": "tone",
+      "question": "Does the reply avoid blaming, belittling, dismissing, or mocking the customer?",
+      "scale": "binary",
+      "values": [
+        "ok",
+        "problem"
+      ],
+      "definitions": {
+        "problem": "At least one of these appears: blaming the customer or saying they should have known; telling them to read the policy or website instead of answering; sarcasm or mockery; condescending phrases such as 'it's really quite simple'; brushing off their concern ('frankly', 'nothing more we can do'); telling them to calm down.",
+        "ok": "None of those appear. A firm refusal that states the rule politely is ok. A short, plain reply is ok. Warmth is welcome but not required."
+      },
+      "examples": {
+        "ok": "Hi Nadia, I'm sorry, but the Silk scarf was a final-sale item, and final-sale items can't be returned.",
+        "problem": "Hi Nadia, it's really quite simple: final sale means final. The Silk scarf can't be returned."
+      },
+      "reference": "none",
+      "graded_by": "judge",
+      "evidence": "The reply text only. Ignore whether the facts or the decision are right; other criteria cover those."
+    },
+    {
+      "id": "grounded",
+      "question": "Is every price, date, and status in the reply backed by the order record or the policy?",
+      "scale": "binary",
+      "values": [
+        "pass",
+        "fail"
+      ],
+      "definitions": {
+        "fail": "The reply states an amount, a date, or a status (such as 'your return arrived') that the record or policy doesn't support.",
+        "pass": "Every amount, date, and status in the reply can be found in, or worked out from, the record and the policy."
+      },
+      "examples": {
+        "pass": "Your refund of $62.00 was issued on July 30.",
+        "fail": "Your refund of $70.00 was issued on July 30. (The record says $62.00.)"
+      },
+      "reference": "records",
+      "graded_by": "code",
+      "check": "supported_facts",
+      "evidence": "The reply, the order records, and the policy file."
+    },
+    {
+      "id": "no_false_refund_promises",
+      "question": "Does the reply avoid saying a refund was sent when it wasn't, and avoid promising when money will arrive?",
+      "scale": "binary",
+      "values": [
+        "pass",
+        "fail"
+      ],
+      "definitions": {
+        "fail": "It says a refund was issued while the record shows none, or it gives a date or number of days for the money to arrive.",
+        "pass": "It describes refund status exactly as the record shows it and gives no arrival date or number of days."
+      },
+      "examples": {
+        "pass": "Once it passes inspection, your refund goes back to your original payment method.",
+        "fail": "Your refund has been issued and should arrive within 5 business days."
+      },
+      "reference": "records",
+      "graded_by": "code",
+      "check": "refund_commitment",
+      "evidence": "The reply and the refund status in the record."
+    },
+    {
+      "id": "answers_the_question",
+      "question": "Does the first or second sentence respond to what the customer actually asked?",
+      "scale": "binary",
+      "values": [
+        "pass",
+        "fail"
+      ],
+      "definitions": {
+        "fail": "The opening sentences talk about something else (a generic greeting, a policy summary, another order) before or instead of the customer's question.",
+        "pass": "By the end of the second sentence, the reply has started answering the customer's question or says why it can't yet."
+      },
+      "examples": {
+        "pass": "Hi Ana, we received your return on August 7, and it's now waiting for inspection.",
+        "fail": "Hi Ana, thanks for shopping with Example Outfitters! Our return policy allows returns within 30 days."
+      },
+      "reference": "none",
+      "graded_by": "judge",
+      "evidence": "The customer's message and the first two sentences of the reply."
+    },
+    {
+      "id": "complete",
+      "question": "Does the reply do every step listed in the case's expected behavior?",
+      "scale": "binary",
+      "values": [
+        "pass",
+        "fail"
+      ],
+      "definitions": {
+        "fail": "At least one step in the expected behavior is missing or contradicted. Different wording that means the same thing counts as done.",
+        "pass": "Every step in the expected behavior is there, in any wording."
+      },
+      "examples": {
+        "pass": "Hi Mara, you're welcome to send back the Rain jacket ... we'll email you a prepaid return label ... your refund goes to the card you paid with.",
+        "fail": "Hi Mara, you can return the Rain jacket. (No label, no refund method.)"
+      },
+      "reference": "expected_behavior",
+      "graded_by": "judge",
+      "evidence": "The reply and the case's expected behavior (the reference)."
+    },
+    {
+      "id": "policy_reading",
+      "question": "Would the policy owner agree with how the reply applies the store's rules?",
+      "scale": "ordinal",
+      "values": [
+        "correct",
+        "debatable",
+        "incorrect"
+      ],
+      "definitions": {
+        "correct": "The policy owner would apply the rules the same way.",
+        "debatable": "Two people who know the policy well could reasonably disagree, for example an opened item that caused a skin reaction.",
+        "incorrect": "The reply applies the wrong rule, the wrong policy version, or skips an escalation rule."
+      },
+      "examples": {
+        "correct": "Declines a final-sale scarf.",
+        "debatable": "Declines an opened face serum after a skin reaction instead of escalating it.",
+        "incorrect": "Applies the 30-day window to an order placed under the older 45-day policy."
+      },
+      "reference": "policy",
+      "graded_by": "human",
+      "evidence": "The reply, the case, and the policy version that applies to the order."
+    },
+    {
+      "id": "edit_minutes",
+      "question": "How many minutes did the agent spend changing the draft before sending it?",
+      "scale": "continuous",
+      "unit": "minutes",
+      "range": [
+        0,
+        30
+      ],
+      "how_measured": "Helpdesk timestamps from opening the draft to sending it, minus time spent on other tickets. Measured in a pilot, not offline.",
+      "reference": "none",
+      "graded_by": "human",
+      "evidence": "Helpdesk event log for the ticket."
+    }
+  ]
+}

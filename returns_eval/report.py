@@ -13,7 +13,7 @@ import textwrap
 from typing import Any
 
 from .cases import CASE_CATEGORIES
-from .grading import CHECKS, SEVERITY
+from .grading import CHECKS, CONDITIONAL_CHECKS, SEVERITY
 
 WIDTH = 92
 
@@ -33,7 +33,7 @@ def by_category(results: list[dict[str, Any]]) -> dict[str, tuple[int, int]]:
 
 def by_check(results: list[dict[str, Any]]) -> dict[str, tuple[int, int]]:
     """For each check: (cases failing it, cases graded)."""
-    names = [name for name, _, _ in CHECKS] + ["candidate_error"]
+    names = [name for name, _, _ in CHECKS] + list(CONDITIONAL_CHECKS)
     return {name: (sum(name in r["failed_checks"] for r in results), len(results)) for name in names}
 
 
@@ -55,6 +55,41 @@ def measures(results: list[dict[str, Any]]) -> dict[str, str]:
     if times and times[-1] >= 0.1:
         p95 = times[max(0, math.ceil(0.95 * len(times)) - 1)]
         out["p95 draft time"] = f"{p95:.1f} s (n={len(times)} drafts)"
+    return out
+
+
+def usage_lines(results: list[dict[str, Any]]) -> list[str]:
+    """Tokens, time, and estimated cost, when the candidate reported them (model-backed candidates)."""
+    import json
+    import os
+    from pathlib import Path
+
+    attempts = [a for r in results for a in r["attempts"] if a.get("usage")]
+    if not attempts:
+        return []
+    usage = [a["usage"] for a in attempts]
+    simulated = any(u.get("source") == "simulated" for u in usage)
+    seconds = sorted(u["seconds"] if u.get("seconds") is not None else a["seconds"] for u, a in zip(usage, attempts))
+    tin = sum(u.get("input_tokens") or 0 for u in usage)
+    tout = sum(u.get("output_tokens") or 0 for u in usage)
+    n = len(attempts)
+    title = ("Tokens, time, and cost (SIMULATED: tokens estimated as characters / 4; time and prices made up)"
+             if simulated else "Tokens, time, and cost (tokens as reported by the provider; time measured on this computer)")
+    out = ["", title,
+           f"  {'tokens per draft (average)':<34}in {tin / n:,.0f}, out {tout / n:,.0f}",
+           f"  {'time per draft':<34}median {seconds[(n - 1) // 2]:.1f} s, p95 "
+           f"{seconds[max(0, math.ceil(0.95 * n) - 1)]:.1f} s (n={n} drafts)"]
+    prices_file = Path(os.environ.get("EVALS_PRICES") or Path(__file__).resolve().parent.parent / "data" / "economics"
+                       / "prices.ILLUSTRATIVE.json")
+    prices = json.loads(prices_file.read_text(encoding="utf-8"))["per_million_tokens"] if prices_file.exists() else {}
+    key = usage[0].get("price_key")
+    if key in prices:
+        cost = (tin * prices[key]["input"] + tout * prices[key]["output"]) / 1_000_000
+        where = prices_file.name + (" (made-up prices)" if "ILLUSTRATIVE" in prices_file.name.upper() else "")
+        out.append(f"  {'estimated model cost':<34}${cost:.4f} for {n} drafts (${cost / n:.5f} per draft), from {where}")
+    else:
+        out.append(f"  {'estimated model cost':<34}no price on file for '{key}'. Add your provider's current prices "
+                   "to a copy of data/economics/prices.ILLUSTRATIVE.json and set EVALS_PRICES to it.")
     return out
 
 
@@ -81,11 +116,15 @@ def step(name: str | None) -> str:
 
 def header(meta: dict[str, Any]) -> list[str]:
     repeat = f" | repeat {meta['repeat']}" if meta.get("repeat", 1) > 1 else ""
-    return [
+    seed = f" | seed {meta['seed']}" if meta.get("seed") is not None else ""
+    out = [
         f"Tested {meta['candidate']} (version {meta['candidate_version']}) on {meta['case_count']} test cases",
         f"  To repeat this exactly: case set {meta['case_set_version']} (id {meta['case_set_sha256']}) | "
-        f"grader {meta['grader_version']}{repeat} | run {meta['run_id']}",
+        f"grader {meta['grader_version']}{repeat}{seed} | run {meta['run_id']}",
     ]
+    if meta.get("simulated"):
+        out.append("  SIMULATED: a script with built-in randomness, not a language model. Another seed gives other results.")
+    return out
 
 
 def summary(run: dict[str, Any]) -> list[str]:
@@ -98,7 +137,7 @@ def summary(run: dict[str, Any]) -> list[str]:
         out.append(f"  {cat:<32}{frac(p, n):>20}")
     out += ["", f"{'Problems found, by check':<34}{'how serious':<12}{'cases with this problem':>24}"]
     for name, (f, n) in by_check(results).items():
-        if name == "candidate_error" and not f:
+        if name in CONDITIONAL_CHECKS and not f:
             continue
         out.append(f"  {name:<32}{SEVERITY[name]:<12}{frac(f, n):>24}")
     out.append(f"  {SEVERITY_KEY}")
@@ -106,6 +145,7 @@ def summary(run: dict[str, Any]) -> list[str]:
     if found:
         out += ["", "Other measures"] + [f"  {name:<40}{value:>16}   {MEASURE_HELP.get(name, '')}"
                                          for name, value in found.items()]
+    out += usage_lines(results)
     crit = [r for r in results if r["worst_severity"] == "critical"]
     out += ["", f"Critical failures: {len(crit)}" + (" (serious mistakes: any one of them stops a launch)" if crit else "")]
     for r in crit:
@@ -211,7 +251,7 @@ def compare(runs: list[dict[str, Any]]) -> list[str]:
     out += ["", "Problems found, by check (cases with this problem; lower is better)"]
     checks = [by_check(r["results"]) for r in runs]
     for name in checks[0]:
-        if name == "candidate_error" and not any(c[name][0] for c in checks):
+        if name in CONDITIONAL_CHECKS and not any(c[name][0] for c in checks):
             continue
         out.append(f"  {name + ' (' + SEVERITY[name] + ')':<30}" + "".join(f"{frac(*c[name]):>{col}}" for c in checks))
     found = [measures(r["results"]) for r in runs]

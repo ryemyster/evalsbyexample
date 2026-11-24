@@ -15,6 +15,7 @@ from .baseline import TemplateBaseline
 from .candidate_v1 import CandidateV1
 from .candidate_v2 import CandidateV2
 from .candidate_v4 import CandidateV4
+from .simulated import CandidateV5, SimModelA, SimModelB, SimModelC
 
 # EXTEND HERE: register a candidate by name. You don't have to: any class works as
 # --candidate module.path:ClassName. Start from playground/my_candidate.py, or for a
@@ -24,6 +25,11 @@ BUILT_IN: dict[str, type[Candidate]] = {
     CandidateV1.name: CandidateV1,
     CandidateV2.name: CandidateV2,
     CandidateV4.name: CandidateV4,  # the final challenge (TUTOR.md)
+    # Part 2: SIMULATED models with built-in randomness (TUTOR-PART2.md)
+    SimModelA.name: SimModelA,
+    SimModelB.name: SimModelB,
+    SimModelC.name: SimModelC,
+    CandidateV5.name: CandidateV5,  # the Part 2 capstone
 }
 
 

@@ -13,8 +13,9 @@ from typing import Any
 
 from .checks import CHECKS, CRITICAL, MAJOR, CheckResult, QUESTION, SEVERITY
 from .facts import build_facts
+from .output_format import output_problems
 
-GRADER_VERSION = "1.1"
+GRADER_VERSION = "1.2"  # 1.2: added structured_output
 
 
 def grade_attempt(case: dict[str, Any], attempt: dict[str, Any]) -> list[CheckResult]:
@@ -26,6 +27,10 @@ def grade_attempt(case: dict[str, Any], attempt: dict[str, Any]) -> list[CheckRe
             continue  # nothing to read; the error is reported below
         problems = fn(case, draft, trace, facts)
         results.append(CheckResult(name, severity, not problems, problems, QUESTION[name]))
+    if draft is not None and draft.get("raw_output") is not None:
+        problems = output_problems(draft["raw_output"])
+        results.append(CheckResult("structured_output", SEVERITY["structured_output"], not problems, problems,
+                                   QUESTION["structured_output"]))
     if attempt.get("error"):
         results.append(CheckResult("candidate_error", SEVERITY["candidate_error"], False,
                                    [attempt["error"]], QUESTION["candidate_error"]))

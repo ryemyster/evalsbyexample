@@ -1,0 +1,19 @@
+{
+  "illustrative": true,
+  "note": "Made-up volumes, rates, and costs for practising an evaluation budget. Replace every number with your own before using this for a real decision.",
+  "drafts_written_by": "candidate-v2 (a script, not from the sim-model family)",
+  "weekly_drafts": 2000,
+  "segment_share": {"accept_return": 0.30, "inform": 0.30, "decline_return": 0.12, "escalate": 0.15, "ask_customer": 0.13},
+  "tone_problem_rate": {"accept_return": 0.01, "inform": 0.02, "decline_return": 0.06, "escalate": 0.03, "ask_customer": 0.02},
+  "tone_problem_rate_note": "An assumption about real traffic, not a measurement. The labeled drafts were chosen to include many problems (21 of 64), so their rate says nothing about real traffic. Measure it with a random sample of real drafts.",
+  "weekly_budget_usd": 400,
+  "team_max_missed_per_week": 5,
+  "team_rule_note": "Agreed by the support lead before anyone saw results: at most 5 rude replies a week may go out unreviewed.",
+  "person": {"usd_per_minute": 0.75, "minutes_per_tone_check": 0.5, "minutes_per_flag_review": 1.0},
+  "relabeling": {"minutes_per_draft": 2.0, "annotators": 2, "note": "Fresh labels each month keep the judge's measured error rates current (calibration drift)."},
+  "cost_of_a_rude_reply_sent_usd": 30,
+  "drafting_usd_per_draft": 0.0034,
+  "drafting_source": "python3 -m returns_eval run --candidate sim-model-a (SIMULATED estimate; a script like candidate-v2 costs nothing to run)",
+  "resolved_share": 0.85,
+  "resolved_source": "ILLUSTRATIVE pilot: 17 of 20 assisted tickets were not reopened within 7 days (python3 -m returns_eval pilot)"
+}

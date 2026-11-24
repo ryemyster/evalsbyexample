@@ -1,0 +1,21 @@
+{
+  "plan": "judge-a everywhere, people see its flags and unsure verdicts, half of inform spot-checked",
+  "about": "Reference solution for Exercise 15. Other plans can pass; the test checks the budget, the limit, and the evidence.",
+  "code_checks_share": 1.0,
+  "judge": "judge-a",
+  "measured_on": "holdout",
+  "judge_share": {},
+  "people_check_flags": true,
+  "people_check_unsure_below": 0.7,
+  "people_random_share": {"inform": 0.5},
+  "relabel_drafts_per_month": 40,
+  "evidence": [
+    {"claim": "On the holdout split, every draft judge-a got wrong was low-confidence except one sarcastic inform reply.",
+     "command": "python3 -m returns_eval calibrate judge-a judge-b --split holdout"},
+    {"claim": "judge-a flagged no fine drafts on holdout, so flag reviews are cheap; judge-b flagged 5 polite refusals.",
+     "command": "python3 -m returns_eval calibrate judge-a judge-b --split holdout"},
+    {"claim": "The drafts come from candidate-v2, a script, so judge-a's self-preference for sim-model replies doesn't apply here.",
+     "command": "python3 -m returns_eval bias-check judge-a"}
+  ],
+  "why": "judge-a with unsure verdicts sent to people reaches every holdout problem except sarcasm in inform, so people spot-check half of inform. That keeps expected misses at 3 a week, under the limit of 5, for about $170 a week. Monthly relabeling keeps the error rates current. If drafts ever come from the sim-model family, switch to judge-b."
+}
